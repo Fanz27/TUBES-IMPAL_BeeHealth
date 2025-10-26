@@ -14,28 +14,3 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-
-
-Installation
-Prerequisites
-To get started with TailAdmin, ensure you have the following prerequisites installed and set up:
-
-Node.js 18.x or later (recommended to use Node.js 20.x or later)
-Cloning the Repository
-Clone the repository using the following command:
-
-git clone https://github.com/TailAdmin/free-react-tailwind-admin-dashboard.git
-Windows Users: place the repository near the root of your drive if you face issues while cloning.
-
-Install dependencies:
-
-npm install
-# or
-yarn install
-Use the --legacy-peer-deps flag, if you face issues while installing.
-
-Start the development server:
-
-npm run dev
-# or
-yarn dev
