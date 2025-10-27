@@ -2,7 +2,7 @@ import InputForm from "../Elements/Input/Index"
 import Button from "../Elements/Button/Index.jsx"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { API_URL }  from "../../api.js";
+import { API_URL }  from "../../api.jsx";
 
 
 const FormRegister = () => {
@@ -50,7 +50,7 @@ const FormRegister = () => {
         try {
             console.log("Validasi berhasil. Melakukan proses registrasi...");
             console.log("Response status:");
-            const response = await fetch(`${API_URL}`, {
+            const response = await fetch(`${API_URL}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
