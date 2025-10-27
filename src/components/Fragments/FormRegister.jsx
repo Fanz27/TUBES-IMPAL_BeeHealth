@@ -6,7 +6,7 @@ import { API_URL }  from "../../api.jsx";
 
 
 const FormRegister = () => {
-    const [name, setName] = useState("");
+    const [nama, setNama] = useState("");
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -18,11 +18,11 @@ const FormRegister = () => {
         e.preventDefault();
         setMessage('');
 
-        if (name.trim() === '' || email.trim() === '' || username.trim() === '' || password.trim() === '') {
+        if (nama.trim() === '' || email.trim() === '' || username.trim() === '' || password.trim() === '') {
             setMessage('Semua form harus diisi.');
             return;                                                                 
         }
-        if (name.trim() === '') {
+        if (nama.trim() === '') {
             setMessage('Name tidak boleh kosong.');
             return;
         }
@@ -56,7 +56,7 @@ const FormRegister = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    name: name.trim(),
+                    nama: nama.trim(),
                     email: email.trim(),
                     username: username.trim(),
                     password: password.trim(),
@@ -91,8 +91,8 @@ const FormRegister = () => {
                 type="text" 
                 placeholder="Masukkan nama anda" 
                 name="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={nama}
+                onChange={(e) => setNama(e.target.value)}
             ></InputForm>
             <InputForm 
                 label="Email" 

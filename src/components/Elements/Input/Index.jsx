@@ -2,12 +2,12 @@ import Label from "./Labels.jsx";
 import Input from "./input.jsx";
 
 const InputForm = (props) => {
-    const { label, name, type, placeholder, value, onChange } = props;
+    const { label, nama, type, placeholder, value, onChange } = props;
     return (
         <div className="mb-6">
             <Label htmlFor={name}>{label}</Label>
             <Input 
-            name={name} 
+            nama={nama} 
             type={type} 
             placeholder={placeholder}
             value={value}
