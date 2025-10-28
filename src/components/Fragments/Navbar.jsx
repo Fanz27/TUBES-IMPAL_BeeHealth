@@ -1,16 +1,16 @@
 import Button from "../Elements/Button/Index.jsx"
 const Navbar = () => {
-  const name = localStorage.getItem('name');
+  const nama = localStorage.getItem('nama');
   const handleLogout = () => {
-    localStorage.removeItem('name');
+    localStorage.removeItem('nama');
     localStorage.removeItem('email');
     localStorage.removeItem('password');
-    window.location.href = "/";
+    window.location.href = "/login";
   }
   return (
       <nav className="bg-[#D9FBC5] text-gray-800 p-8 mt-auto">
         <div className="flex justify-end h-10 text-white items-center px-10 gap-x-5">
-          {name}
+          {nama}
           <Button className="ml-5" onClick={handleLogout}>Logout</Button>
         </div>
         <div className="flex flex-col md:flex-row justify-between items-center px-8 py-4">

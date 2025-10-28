@@ -49,8 +49,7 @@ const FormRegister = () => {
 
         try {
             console.log("Validasi berhasil. Melakukan proses registrasi...");
-            console.log("Response status:");
-            const response = await fetch(`${API_URL}/register`, {
+            const response = await fetch(`${API_URL}/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -62,7 +61,6 @@ const FormRegister = () => {
                     password: password.trim(),
                 })
             });
-            console.log("Response status:", response);
             let data = {};
             if (response.headers.get("Content-Type")?.includes("application/json")) {
                 data = await response.json();
@@ -75,7 +73,7 @@ const FormRegister = () => {
                 setPassword('');
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user_id', data.id);
-                navigate('/dashboard');
+                navigate('/login');
             } else {
                 setMessage(data.message || 'Registrasi gagal. silahkan coba lagi')
             }
