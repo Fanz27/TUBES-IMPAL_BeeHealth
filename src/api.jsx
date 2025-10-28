@@ -1,6 +1,6 @@
 import axios from "axios"
 const NGROK_URL = 'https://numbers-subessential-inarguably.ngrok-free.dev';
-export const API_URL = `${NGROK_URL}/api/auth`;
+export const API_URL = `${NGROK_URL}/api`;
 
 const api = axios.create({
   baseURL: NGROK_URL,
