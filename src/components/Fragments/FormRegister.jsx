@@ -72,7 +72,7 @@ const FormRegister = () => {
                 setEmail('');
                 setPassword('');
                 localStorage.setItem('token', data.token);
-                localStorage.setItem('user_id', data.id);
+                localStorage.setItem('userId', data.id);
                 navigate('/login');
             } else {
                 setMessage(data.message || 'Registrasi gagal. silahkan coba lagi')

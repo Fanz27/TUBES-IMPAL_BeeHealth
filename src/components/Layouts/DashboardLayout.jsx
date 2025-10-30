@@ -8,7 +8,7 @@ const DashboardLayout = (props) => {
         <div className="flex flex-col min-h-screen"> 
         <Navbar/>
         <MainDashboard>
-
+            
         </MainDashboard>
         <Footer>
             <NavbarFooter/>
