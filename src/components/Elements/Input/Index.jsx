@@ -5,7 +5,7 @@ const InputForm = (props) => {
     const { label, nama, type, placeholder, value, onChange } = props;
     return (
         <div className="mb-6">
-            <Label htmlFor={name}>{label}</Label>
+            <Label htmlFor={nama}>{label}</Label>
             <Input 
             nama={nama} 
             type={type} 

@@ -7,6 +7,7 @@ import LoginPage from './pages/login.jsx'
 import RegisterPage from './pages/register.jsx'
 import NotFoundPage from './pages/404.jsx'
 import DashboardPage from './pages/dashboard.jsx'
+import CalculatePage from './pages/calculate.jsx'
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <DashboardPage/>
+  },
+  {
+    path: "/calculate",
+    element: <CalculatePage/>
   }
 ])
 

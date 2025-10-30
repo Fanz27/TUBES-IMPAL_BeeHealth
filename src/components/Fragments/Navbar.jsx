@@ -22,7 +22,7 @@ const Navbar = () => {
             </a>
           </li>
           <li>
-            <a href="#" className="hover:underline">
+            <a href="/calculate" className="hover:underline">
               Calculate
             </a>
           </li>

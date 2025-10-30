@@ -64,8 +64,8 @@ const FormLogin = () => {
         setUsername('');
         setEmail('');
         setPassword('');
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user_id', data.id);
+        localStorage.setItem('AuthToken', data.token);
+        localStorage.setItem('userId', data.userId);
         navigate('/dashboard');
       } else {
         setMessage(data.message || 'Login gagal. silahkan coba lagi')
@@ -87,7 +87,7 @@ const FormLogin = () => {
         label="Username"
         type="text"
         placeholder="Masukkan username anda"
-        name="username"
+        nama="username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       ></InputForm>
@@ -95,7 +95,7 @@ const FormLogin = () => {
         label="Email"
         type="email"
         placeholder="example@gmail.com"
-        name="email"
+        nama="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       ></InputForm>
@@ -103,7 +103,7 @@ const FormLogin = () => {
         label="Password"
         type="password"
         placeholder="Harus 8 karakter"
-        name="password"
+        nama="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       ></InputForm>
