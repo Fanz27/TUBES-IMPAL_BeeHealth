@@ -14,12 +14,13 @@ const CalorieCalculate = () => {
         weight: 60,
         goal: "CUTTING",
     });
-
+    
+    const API_PATH = `${API_URL}/user/calculate`;
+    
     const [results, setResults] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const API_PATH = `${API_URL}/user/calculate`;
 
     const handleChange = (e) => {
         const { name, value } = e.target;

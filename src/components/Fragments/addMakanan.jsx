@@ -25,6 +25,7 @@ const AddMakanan = () => {
         const userRole = localStorage.getItem('role');
         setIsAdmin(userRole === 'admin');
     }, []);
+    
 
     const fetchMakanan = async () => {
         setLoading(true);
@@ -43,19 +44,31 @@ const AddMakanan = () => {
                 }
             });
 
+            const text = await response.text();
+            console.log("RAW RESPONSE:", text);
+
+            try {
+              const data = JSON.parse(text);
+            } catch (e) {
+              console.error("JSON parse error:", e);
+              return;
+            }
+            console.log("PARSED JSON:", data);
+
+
             console.log('Response status:', response.status);
             console.log('Response ok:', response.ok);
-
+            
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
               const textResponse = await response.text();
               console.error('Response bukan JSON (first 200 chars):', textResponse.substring(0, 200));
               throw new Error("Response bukan JSON");
             }
-
+            
             const result = await response.json();
             console.log('API Response:', result);
-
+            
 
             if ( response.ok) {
               let  foodData = [];
@@ -74,7 +87,7 @@ const AddMakanan = () => {
         } catch (err) {
           console.error('Error fetching:', err);
           if (!err.message.includes('ngrok')) {
-            setError("Terjadi kesalahan saat mengambil data makanan.");
+            setError("Terjadi kesalahan saat mengambil data makanan. oi gunakan server yang valid.");
           }
         } finally {
           setLoading(false);
@@ -222,8 +235,6 @@ const AddMakanan = () => {
             setLoading(false);
         }
     };
-
-
 
 
    return (
