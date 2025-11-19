@@ -116,7 +116,7 @@ const FormRegister = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
             ></InputForm>
-            <Button classname ="w-full" type="submit">Daftar</Button>
+            <Button className ="w-full" type="submit" variant="default">Daftar</Button>
             {message && <p className="text-red-500 mt-2">{message}</p>}
         </form>
     )
