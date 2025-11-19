@@ -20,10 +20,16 @@ const FormLogin = () => {
       return;
     }
 
+    // if (!username.match(username.)) {
+    //   setMessage('Username salah')
+    //   return;
+    // }
+
     if (username.trim() === '') {
       setMessage('Username tidak boleh kosong.');
       return;
     }
+
     if (password.trim() === '') {
       setMessage('Password tidak boleh kosong.');
       return;
@@ -58,17 +64,34 @@ const FormLogin = () => {
       });
 
       const data = await response.json();
+      console.log("response", data);
 
       if (response.ok) {
-        setMessage("Login berhasil");
-        setUsername('');
-        setEmail('');
-        setPassword('');
-        localStorage.setItem('AuthToken', data.token);
-        localStorage.setItem('userId', data.userId);
-        navigate('/dashboard');
+        if (data.token && data.userId) {
+          setMessage("Login berhasil");
+          localStorage.setItem('AuthToken', data.token);
+          localStorage.setItem('userId', data.userId);
+          localStorage.setItem('nama', data.nama);
+          setUsername('');
+          setEmail('');
+          setPassword('');
+          navigate('/dashboard');
+        }
       } else {
-        setMessage(data.message || 'Login gagal. silahkan coba lagi')
+        if (response.status === 401) {
+          setMessage('Email atau username salah. Silahkan coba lagi.');
+          return;
+        } else {
+          if (data.field === 'email') {
+            setMessage('Format email salah. Silahkan periksa kembali.');
+          } else if (data.field === 'password') {
+            setMessage('Password terlalu pendek. Harus terdiri dari minimal 8 karakter.');
+          } else if (data.field === 'username') {
+            setMessage('Username tidak ditemukan. Silahkan periksa kembali.');
+          } else {
+            setMessage(data.message || 'Login gagal. silahkan coba lagi');
+          }
+        }
       }
     } catch (error) {
       console.error('Error', error)
@@ -107,7 +130,7 @@ const FormLogin = () => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       ></InputForm>
-      <Button classname="w-full" type="submit">
+      <Button className="w-full" type="submit" variant="default">
         Login
       </Button>
         {message && <p className="text-red-500 mt-2">{message}</p>}

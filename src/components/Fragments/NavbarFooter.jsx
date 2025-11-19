@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const NavbarFooter = () => {
     return (
-        <nav>
+        <nav className="bg-[#D9FBC5] text-gray-800 p-4 flex justify-center">
             <ul className="flex space-x-6">
                 <li><Link to="/" className="hover:underline">Home</Link></li>
                 <li><a href="#" className="hover:underline">Calculate</a></li>
