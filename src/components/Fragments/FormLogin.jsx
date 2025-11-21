@@ -72,6 +72,7 @@ const FormLogin = () => {
           localStorage.setItem('AuthToken', data.token);
           localStorage.setItem('userId', data.userId);
           localStorage.setItem('nama', data.nama);
+          localStorage.setItem('role', data.role);
           setUsername('');
           setEmail('');
           setPassword('');

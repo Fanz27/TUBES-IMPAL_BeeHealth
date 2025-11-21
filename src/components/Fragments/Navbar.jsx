@@ -1,8 +1,10 @@
 import Button from "../Elements/Button/Index.jsx";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const nama = localStorage.getItem('nama');
-  
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     localStorage.removeItem('nama');
     localStorage.removeItem('email');
@@ -10,7 +12,7 @@ const Navbar = () => {
     localStorage.removeItem('AuthToken');
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
-    window.location.href = "/login";
+    navigate("/login"); 
   };
 
   return (
@@ -28,60 +30,18 @@ const Navbar = () => {
 
       <div className="p-4 justify-between items-center max-w-7xl mx-auto flex">
         <div className="flex justify-between items-center mb-4">
-          <a href="/home" className="text-3xl font-bold hover:opacity-70 transition">
+          <Link to="/home" className="text-3xl font-bold hover:opacity-70 transition">
             Bee<span className="text-white">Health</span>
-          </a>
+          </Link>
         </div>
 
         <ul className="flex justify-end items-center gap-x-8 text-base">
-          <li>
-            <a 
-              href="/home" 
-              className="hover:text-green-500 font-medium"
-            >
-              Home
-            </a>
-          </li>
-          <li>
-            <a 
-              href="/calculate" 
-              className="hover:text-green-500 font-medium"
-            >
-              Calculate
-            </a>
-          </li>
-          <li>
-            <a 
-              href="/rekomendasi" 
-              className="hover:text-green-500 font-medium"
-            >
-              Recomendasi
-            </a>
-          </li>
-          <li>
-            <a 
-              href="/addMakanan" 
-              className="hover:text-green-500 font-medium"
-            >
-              Add
-            </a>
-          </li>
-          <li>
-            <a 
-              href="/timeline" 
-              className="hover:text-green-500 font-medium"
-            >
-              Timeline
-            </a>
-          </li>
-          <li>
-            <a 
-              href="/about" 
-              className="hover:text-green-500 font-medium"
-            >
-              About
-            </a>
-          </li>
+          <li><Link to="/home" className="hover:text-green-500 font-medium">Home</Link></li>
+          <li><Link to="/calculate" className="hover:text-green-500 font-medium">Calculate</Link></li>
+          <li><Link to="/Rekomendasi" className="hover:text-green-500 font-medium">Recomendasi</Link></li>
+          <li><Link to="/addMakanan" className="hover:text-green-500 font-medium">Add</Link></li>
+          <li><Link to="/timeline" className="hover:text-green-500 font-medium">Timeline</Link></li>
+          <li><Link to="/about" className="hover:text-green-500 font-medium">About</Link></li>
         </ul>
       </div>
     </nav>

@@ -1,5 +1,5 @@
 import NavbarFooter from "../Fragments/NavbarFooter.jsx";
-import Footer from "../Fragments/footer.jsx";
+import Footer from "../Fragments/Footer.jsx";
 import Navbar from "../Fragments/Navbar.jsx";
 import MainDashboard from "../Fragments/MainDashboard.jsx";
 

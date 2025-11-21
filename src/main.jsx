@@ -9,6 +9,7 @@ import NotFoundPage from './pages/404.jsx'
 import DashboardPage from './pages/dashboard.jsx'
 import CalculatePage from './pages/calculate.jsx'
 import PageAddMakanan from './pages/addMakananPage.jsx'
+import RekomendasiPage from './pages/RekomendasiPage.jsx'
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
   {
     path: "/addMakanan",
     element: <PageAddMakanan/>
+  },
+  {
+    path: "/Rekomendasi",
+    element: <RekomendasiPage/>
   }
 ])
 

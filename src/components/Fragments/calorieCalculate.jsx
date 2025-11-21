@@ -47,17 +47,6 @@ const CalorieCalculate = () => {
                       localStorage.getItem("userid") || 
                       localStorage.getItem("userId");
             
-            // console.log("=== DEBUG INFO ===");
-            // console.log("1. API URL:", API_PATH);
-            // console.log("2. Token exists:", !!token);
-            // console.log("3. Token value:", token?.substring(0, 30) + "...");
-            // console.log("4. UserId:", id);
-            // console.log("5. Form Data:", formData);
-
-            // Debug log untuk melihat isi localStorage
-            // console.log("LocalStorage keys:", Object.keys(localStorage));
-            // console.log("Token found:", token ? "Yes" : "No");
-            // console.log("UserId found:", id ? "Yes" : "No");
 
             if (!token) {
                 setError("Token tidak ditemukan. Silakan login kembali.");

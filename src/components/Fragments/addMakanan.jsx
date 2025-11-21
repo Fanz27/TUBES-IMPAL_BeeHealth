@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, Plus, Edit2, Trash2, X, Save } from 'lucide-react';
 import axios from "axios";
-import { API_URL } from "../../api";
+import api, { API_URL } from "../../api";
 
 const AddMakanan = () => {
     const [FoodName, setFoodName] = useState([]);
@@ -26,52 +26,18 @@ const AddMakanan = () => {
         setIsAdmin(userRole === 'admin');
     }, []);
     
-
     const fetchMakanan = async () => {
         setLoading(true);
         setError(null);
+
         try {
             const queryParam = search ? `?search=${encodeURIComponent(search)}` : '';
-            const token = localStorage.getItem("AuthToken");
+            const response = await api.get(`/food/${queryParam}`);
+      
+            const result = response.data.data;
 
-            console.log('Fetching with token:', token ? 'Token exists' : 'No token');
-            console.log('URL:', `${API_URL}/food${queryParam}`);
-
-              const response = await fetch(`${API_URL}/food${queryParam}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            const text = await response.text();
-            console.log("RAW RESPONSE:", text);
-
-            try {
-              const data = JSON.parse(text);
-            } catch (e) {
-              console.error("JSON parse error:", e);
-              return;
-            }
-            console.log("PARSED JSON:", data);
-
-
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
-            
-            const contentType = response.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-              const textResponse = await response.text();
-              console.error('Response bukan JSON (first 200 chars):', textResponse.substring(0, 200));
-              throw new Error("Response bukan JSON");
-            }
-            
-            const result = await response.json();
-            console.log('API Response:', result);
-            
-
-            if ( response.ok) {
-              let  foodData = [];
+            if (response.status === 200) {
+              let foodData = [];
               if (result.data && Array.isArray(result.data)) {
                 foodData = result.data
               } else if (Array.isArray(result)) {
@@ -79,16 +45,13 @@ const AddMakanan = () => {
               } else if (result.food && Array.isArray(result.food)) {
                 foodData = result.food;
               }
-              console.log('Setting food data:', foodData);
               setFoodName(foodData);
             } else {
                 setError(result.message || "Gagal mengambil data makanan.");
             }
         } catch (err) {
           console.error('Error fetching:', err);
-          if (!err.message.includes('ngrok')) {
-            setError("Terjadi kesalahan saat mengambil data makanan. oi gunakan server yang valid.");
-          }
+          setError("Terjadi kesalahan saat mengambil data makanan.");
         } finally {
           setLoading(false);
         }
@@ -107,6 +70,11 @@ const AddMakanan = () => {
     }, [search]);
 
     const handleAddMakanan = () => {
+      const role = localStorage.getItem('role');
+      if (role !== "ADMIN") {
+        setError("Hanya admin yang dapat menambah makanan.");
+        return;
+      }
         setCurrentMakanan({
             id: '',
             nama: '',
@@ -120,6 +88,11 @@ const AddMakanan = () => {
     };
 
     const handleEditMakanan = (food) => {
+      const role = localStorage.getItem('role');
+      if (role !== "ADMIN") {
+        setError("Hanya admin yang dapat mengedit makanan.");
+        return;
+      }
         setCurrentMakanan(food);
         setEditMakanan(true);
         setShowMakanan(true);
@@ -151,7 +124,7 @@ const AddMakanan = () => {
 
             const url = editMakanan
                 ? `${API_URL}/food/${currentMakanan.id}`
-                : `${API_URL}/food/`;
+                : `${API_URL}/food`;
             const method = editMakanan ? 'PUT' : 'POST';
 
             const response = await fetch(url, {
@@ -175,7 +148,6 @@ const AddMakanan = () => {
 
             if (response.ok) {
                 setSuccess(result.message || "Data makanan berhasil disimpan.");
-                // setShowMakanan(false);
                 if (editMakanan) {
                   setFoodName(prev => prev.map(food => food.id === currentMakanan.id ? currentMakanan : food));
                 } else {
@@ -191,8 +163,6 @@ const AddMakanan = () => {
                 });
                 setShowMakanan(false);
                 setEditMakanan(null);
-                // setSearch('');
-                // await fetchMakanan();
                 setTimeout(() => {
                     setSuccess('');
                 }, 3000);
@@ -208,21 +178,29 @@ const AddMakanan = () => {
     };
 
     const handleDeleteMakanan = async (id, nama) => {
-        if (!window.confirm("Apakah anda yakin ingin menghapus makanan" + nama + "?")) return;
+        if (!window.confirm("Apakah anda yakin ingin menghapus makanan " + nama + "?")) return;
 
         setLoading(true);
         setError('');
         setSuccess('');
 
-        try {
-            const response = await fetch (`${API_URL}/food/${id}`, {
-                method: 'DELETE',
-            });
-            const result = await response.json();
+        const token = localStorage.getItem("AuthToken");
+        const role = localStorage.getItem('role');
+        console.log('User role for deletion:', role);
+        if (role !== "ADMIN") {
+          setError("Hanya admin yang dapat menghapus makanan.");
+          setLoading(false);
+          return;
+        }
 
-            if (response.ok) {
-                setSuccess(result.message || "Data makanan berhasil di hapus.");
-                fetchMakanan();
+        try {
+            const response = await api.delete(`/food/${encodeURIComponent(nama)}`);
+            console.log('Delete response status:', response);
+            const result = await response.data.data;
+            console.log('Delete API Response:', response);
+            if (response.status === 200) {
+                setSuccess(response.data.message || "Data makanan berhasil di hapus.");
+                setFoodName(prev => prev.filter(food => food.nama !== nama));
                 setTimeout(() => {
                     setSuccess('');
                 }, 3000);
@@ -230,6 +208,7 @@ const AddMakanan = () => {
                 setError(result.message || "Gagal menghapus data makanan.");
             }
         } catch (err) {
+          console.error('Delete error:', err);
             setError("Terjadi kesalahan saat menghapus data makanan di server.")
         } finally {
             setLoading(false);
@@ -240,7 +219,7 @@ const AddMakanan = () => {
    return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             🍎 Aplikasi Manajemen Makanan
@@ -248,7 +227,7 @@ const AddMakanan = () => {
           <p className="text-gray-600">Kelola data nutrisi makanan Anda</p>
         </div>
 
-        {/* Alert Messages */}
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
@@ -260,7 +239,7 @@ const AddMakanan = () => {
           </div>
         )}
 
-        {/* Search & Add Button */}
+
         <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
@@ -283,7 +262,7 @@ const AddMakanan = () => {
           </div>
         </div>
 
-        {/* Food List */}
+
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {loading && !showMakanan ? (
             <div className="p-8 text-center text-gray-500">Loading...</div>
@@ -292,15 +271,15 @@ const AddMakanan = () => {
               Tidak ada data makanan. Silakan tambah data baru.
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto"> 
               <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kalori</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Protein (g)</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Carbs (g)</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fat (g)</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Protein (gram)</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Carbs (gram)</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fat (gram)</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                   </tr>
                 </thead>
@@ -336,7 +315,7 @@ const AddMakanan = () => {
           )}
         </div>
 
-        {/* Modal Form */}
+
         {showMakanan && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -448,5 +427,6 @@ const AddMakanan = () => {
     </div>
     );
 }
+
 export default AddMakanan;
 
