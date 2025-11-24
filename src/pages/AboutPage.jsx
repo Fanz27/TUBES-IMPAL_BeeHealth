@@ -1,18 +1,17 @@
+import About from "../components/Fragments/About";
 import Navbar from "../components/Fragments/Navbar";
-import Rekomendasi from "../components/Fragments/Rekomendasi";
 import NavbarFooter from "../components/Fragments/NavbarFooter";
 import Footer from "../components/Fragments/Footer";
-
-const RekomendasiPage = () => {
+const AboutPage = () => {
     return (
         <>
-            <Navbar></Navbar>
-            <Rekomendasi/>
-            <Footer>
+        <Navbar></Navbar>
+        <About/>
+        <Footer>
             <NavbarFooter/>
-            </Footer>
+        </Footer>
         </>
     )
 }
 
-export default RekomendasiPage;
+export default AboutPage;

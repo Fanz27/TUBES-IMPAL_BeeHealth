@@ -9,6 +9,7 @@ const FormLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -76,7 +77,11 @@ const FormLogin = () => {
           setUsername('');
           setEmail('');
           setPassword('');
-          navigate('/dashboard');
+          if (data.role === 'ADMIN') {
+            navigate('/addMakanan');
+          } else {
+            navigate('/dashboard');
+          }
         }
       } else {
         if (response.status === 401) {
@@ -98,11 +103,6 @@ const FormLogin = () => {
       console.error('Error', error)
       setMessage('Terjadikesalahan pada server. Silahkan coba lagi nanti.');
     }
-
-    // localStorage.setItem('name', e.target.name.value)
-    // localStorage.setItem('email', e.target.email.value)
-    // localStorage.setItem('password', e.target.password.value)
-    // console.log("Login");
   };
 
   return (
@@ -123,14 +123,23 @@ const FormLogin = () => {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       ></InputForm>
+      <div className="relative">
       <InputForm
         label="Password"
-        type="password"
+        type={showPassword ? "text" : "password"}
         placeholder="Harus 8 karakter"
         nama="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       ></InputForm>
+      <button
+        type="button"
+        onClick={() => setShowPassword(!showPassword)}
+        className="absolute right-3 top-9 text-sm text-black-600 hover:text-black-800"
+      >
+        {showPassword ? "Sembunyikan" : "Lihat"}
+      </button>
+    </div>
       <Button className="w-full" type="submit" variant="default">
         Login
       </Button>
