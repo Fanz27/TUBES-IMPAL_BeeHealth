@@ -4,7 +4,6 @@ import React from 'react';
 
 const ResultsDisplay = ({ results, formData }) => {
   
-  // ✅ PERBAIKAN: Sesuaikan dengan response API
   // Response API: { message, data: { targetCalories, targetProtein, targetCarbs, targetFat } }
   const { data } = results;
   
