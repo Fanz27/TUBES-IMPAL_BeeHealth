@@ -161,7 +161,7 @@ const MainDashboard = (props) => {
                   <Link
                     to="/About"
                     className={`flex-1 text-center bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors ${
-                      Aktif('/Tbout') ? 'bg-green-500 text-white' : ''
+                      Aktif('/About') ? 'bg-green-500 text-white' : ''
                     }`}
                   >
                     Bagikan Ceritamu

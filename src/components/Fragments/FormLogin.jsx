@@ -21,11 +21,6 @@ const FormLogin = () => {
       return;
     }
 
-    // if (!username.match(username.)) {
-    //   setMessage('Username salah')
-    //   return;
-    // }
-
     if (username.trim() === '') {
       setMessage('Username tidak boleh kosong.');
       return;
@@ -79,8 +74,9 @@ const FormLogin = () => {
           setPassword('');
           if (data.role === 'ADMIN') {
             navigate('/addMakanan');
-          } else {
-            navigate('/dashboard');
+          }
+          if (data.role === 'PENGGUNA_UMUM') {
+            navigate('/home');
           }
         }
       } else {
