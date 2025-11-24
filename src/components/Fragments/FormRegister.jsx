@@ -2,7 +2,7 @@ import InputForm from "../Elements/Input/Index"
 import Button from "../Elements/Button/Index.jsx"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { API_URL }  from "../../api.jsx";
+import { API_URL }  from "../../api.jsx"
 
 
 const FormRegister = () => {
@@ -11,6 +11,7 @@ const FormRegister = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate();
 
@@ -67,6 +68,7 @@ const FormRegister = () => {
             }
 
             if (response.ok) {
+                console.log("response", data);
                 setMessage("Registrasi anda berhasil");
                 setUsername('');
                 setEmail('');
@@ -108,14 +110,32 @@ const FormRegister = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
             ></InputForm>
-            <InputForm 
+            <div className="relative">
+                <InputForm 
+                    label="Password"
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="Password harus 8 karakter" 
+                    name="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+
+                ></InputForm>
+                <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-9 text-sm text-black-600 hover:text-black-800"
+                >
+                    {showPassword ? "Sembunyikan" : "Lihat"}
+                </button>
+            </div>
+            {/* <InputForm 
                 label="Password" 
                 type="password" 
                 placeholder="8+character"
                 name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-            ></InputForm>
+            ></InputForm> */}
             <Button className ="w-full" type="submit" variant="default">Daftar</Button>
             {message && <p className="text-red-500 mt-2">{message}</p>}
         </form>

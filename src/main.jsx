@@ -10,6 +10,10 @@ import DashboardPage from './pages/dashboard.jsx'
 import CalculatePage from './pages/calculate.jsx'
 import PageAddMakanan from './pages/addMakananPage.jsx'
 import RekomendasiPage from './pages/RekomendasiPage.jsx'
+import AboutPage from './pages/AboutPage.jsx'
+import ProtectedRoute from './components/Fragments/ProtectedRoute.jsx'
+import NotebookPage from './pages/notebookPage.jsx'
+import TimelinePage from './pages/timelinePage.jsx'
 
 const router = createBrowserRouter([
   {
@@ -40,15 +44,33 @@ const router = createBrowserRouter([
   },
   {
     path: "/calculate",
-    element: <CalculatePage/>
+    element: <ProtectedRoute requiredRole="PENGGUNA_UMUM">
+      <CalculatePage/>
+    </ProtectedRoute>
+  },
+  {
+    path: "/notebook",
+    element: <ProtectedRoute requiredRole="PENGGUNA_UMUM">
+      <NotebookPage/>
+    </ProtectedRoute>
   },
   {
     path: "/addMakanan",
-    element: <PageAddMakanan/>
+    element: <ProtectedRoute requiredRole="ADMIN">
+      <PageAddMakanan/>
+    </ProtectedRoute>
   },
   {
     path: "/Rekomendasi",
     element: <RekomendasiPage/>
+  },
+  {
+    path: "/About",
+    element: <AboutPage/>
+  },
+  {
+    path: "/Timeline",
+    element: <TimelinePage/>
   }
 ])
 

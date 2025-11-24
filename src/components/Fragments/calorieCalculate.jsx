@@ -1,8 +1,6 @@
-import React from "react";
 import axios from "axios";
 import { useState } from "react";
 import { API_URL } from "../../api";
-import InputForm from "../Elements/Input/Index";
 import Button from "../Elements/Button/Index";
 import ResultsDisplay from "./ResultsDisplay";
 
@@ -68,9 +66,6 @@ const CalorieCalculate = () => {
                 weight: parseFloat(formData.weight),
                 goal: formData.goal,
             };
-
-            console.log("Payload yang dikirim:", payload);
-            console.log("Token yang digunakan:", token.substring(0, 20) + "...");
 
             const response = await axios.post(API_PATH, payload, {
                 headers: {

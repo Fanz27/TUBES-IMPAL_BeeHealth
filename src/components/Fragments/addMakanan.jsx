@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { Search, Plus, Edit2, Trash2, X, Save } from 'lucide-react';
 import axios from "axios";
 import api, { API_URL } from "../../api";
@@ -68,6 +68,11 @@ const AddMakanan = () => {
         }, 500);
         return () => clearTimeout(timer);
     }, [search]);
+
+    useEffect(() => {
+      const userRole = localStorage.getItem('role');
+      setIsAdmin(userRole === 'ADMIN');
+    },[]);
 
     const handleAddMakanan = () => {
       const role = localStorage.getItem('role');

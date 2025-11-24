@@ -57,7 +57,7 @@ const ResultsDisplay = ({ results, formData }) => {
           <div className="macros-grid grid grid-cols-1 md:grid-cols-3 gap-4">
             
             {/* Protein */}
-            <div className="macro-card bg-red-50 p-5 rounded-lg border-2 border-red-200 text-center">
+            <div className="macro-card bg-red-50 p-5 rounded-lg border-2 border-red-200 text-center hover:scale-105 transform transition duration-300">
               <div className="macro-icon mb-2 text-4xl">🥩</div>
               <p className="macro-value text-3xl font-bold text-red-600">
                 {Math.round(targetProtein)}g
@@ -71,7 +71,7 @@ const ResultsDisplay = ({ results, formData }) => {
             </div>
 
             {/* Fats */}
-            <div className="macro-card bg-yellow-50 p-5 rounded-lg border-2 border-yellow-200 text-center">
+            <div className="macro-card bg-yellow-50 p-5 rounded-lg border-2 border-yellow-200 text-center hover:scale-105 tranform transition duration-300">
               <div className="macro-icon mb-2 text-4xl">🥑</div>
               <p className="macro-value text-3xl font-bold text-yellow-600">
                 {Math.round(targetFat)}g
@@ -85,7 +85,7 @@ const ResultsDisplay = ({ results, formData }) => {
             </div>
 
             {/* Carbs */}
-            <div className="macro-card bg-blue-50 p-5 rounded-lg border-2 border-blue-200 text-center">
+            <div className="macro-card bg-blue-50 p-5 rounded-lg border-2 border-blue-200 text-center hover:scale-105 transform transition duration-300">
               <div className="macro-icon mb-2 text-4xl">🍞</div>
               <p className="macro-value text-3xl font-bold text-blue-600">
                 {Math.round(targetCarbs)}g
