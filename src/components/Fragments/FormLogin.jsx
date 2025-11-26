@@ -3,6 +3,7 @@ import Button from "../Elements/Button/Index.jsx";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL }  from "../../api.jsx";
+import { EyeOff, Eye } from "lucide-react";
 
 const FormLogin = () => {
   const [username, setUsername] = useState("");
@@ -131,9 +132,9 @@ const FormLogin = () => {
       <button
         type="button"
         onClick={() => setShowPassword(!showPassword)}
-        className="absolute right-3 top-9 text-sm text-black-600 hover:text-black-800"
+        className="absolute right-4 top-9.5"
       >
-        {showPassword ? "Sembunyikan" : "Lihat"}
+        {showPassword ? <EyeOff size={18}/> : <Eye size={18}/> }
       </button>
     </div>
       <Button className="w-full" type="submit" variant="default">
