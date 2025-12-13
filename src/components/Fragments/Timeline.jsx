@@ -80,6 +80,7 @@ const Timeline = () => {
             [index]: !prev[index]
         }))
     }
+    console.log("jwj")
 
     return (
         <div className="min-h-screen bg-[#F3F4F6] font-sans">
@@ -278,4 +279,4 @@ const Timeline = () => {
     )
 }
 
-export default Timeline;
+export default Timeline
