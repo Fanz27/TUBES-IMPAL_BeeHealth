@@ -1,11 +1,12 @@
 import salad2 from "/images/salad2.png";
 import makananSehat from "/images/makananSehat.png";
-import React, { use, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const MainDashboard = (props) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading]= useState(true);
   const location = useLocation();
   const Aktif = (path) => location.pathname === path;
   
@@ -43,6 +44,22 @@ const MainDashboard = (props) => {
   const prevSlide = () => {
     setCurrentIndex((prev) => (prev - 1 + stories.length) % stories.length);
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
   
   return (
@@ -159,9 +176,9 @@ const MainDashboard = (props) => {
                 
                 <div className="flex gap-3">
                   <Link
-                    to="/About"
+                    to="/Timeline"
                     className={`flex-1 text-center bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors ${
-                      Aktif('/About') ? 'bg-green-500 text-white' : ''
+                      Aktif('/Timeline') ? 'bg-green-500 text-white' : ''
                     }`}
                   >
                     Bagikan Ceritamu
