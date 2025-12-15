@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -8,22 +7,10 @@ import {
   Plus, 
   X,
   Calendar,
-  BookOpen // Saya ganti icon Calendar jadi BookOpen biar lebih 'Notebook'
+  BookOpen
 } from 'lucide-react';
 
-// Konfigurasi Axios
-const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // Sesuaikan port backend
-});
-
-// Interceptor Token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import api from '../../api'; // Pakai instance axios yang sudah dikonfigurasi di api.js
 
 const Notebook = () => {
   // --- STATE ---
@@ -50,28 +37,21 @@ const Notebook = () => {
   });
 
   // --- HELPER FUNCTIONS ---
-
-  const formatDateForAPI = (date) => {
-    return date.toISOString().split('T')[0];
-  };
-
-  const formatDateDisplay = (date) => {
-    return new Intl.DateTimeFormat('id-ID', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    }).format(date);
-  };
+  const formatDateForAPI = (date) => date.toISOString().split('T')[0];
+  const formatDateDisplay = (date) => new Intl.DateTimeFormat('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  }).format(date);
 
   // --- API CALLS ---
-
   const fetchDailyLogs = async () => {
     setLoading(true);
     try {
       const dateString = formatDateForAPI(selectedDate);
-      const response = await api.get('/log/daily');
-      
+      const response = await api.get('/log/daily', { params: { date: dateString } });
+
       const safeSummary = response.data.summary || { totalCaloriesIn: 0, totalCaloriesOut: 0 };
       
       setLogs({
@@ -91,20 +71,14 @@ const Notebook = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (logType === 'food') {
-        const id = parseInt(formData.foodId);
-        if (isNaN(id)) {
-            alert("Masukkan harus berupa angka!!");
-            return; 
-        }
+    if (logType === 'food' && isNaN(parseInt(formData.foodId))) {
+      alert("Masukkan harus berupa angka!!");
+      return; 
     }
 
-    if (logType === 'exercise') {
-        const id = parseInt(formData.exerciseId);
-        if (isNaN(id)) {
-            alert("Masukkan harus berupa angka!!");
-            return; 
-        }
+    if (logType === 'exercise' && isNaN(parseInt(formData.exerciseId))) {
+      alert("Masukkan harus berupa angka!!");
+      return; 
     }
 
     try {
@@ -120,9 +94,9 @@ const Notebook = () => {
           durationInMinute: parseInt(formData.durationInMinute)
         });
       }
-      
+
       setIsModalOpen(false);
-      fetchDailyLogs(); 
+      fetchDailyLogs();
       alert('Catatan berhasil ditambahkan ke Notebook!');
     } catch (err) {
       alert(err.response?.data?.message || 'Gagal menyimpan catatan.');
@@ -130,7 +104,6 @@ const Notebook = () => {
   };
 
   // --- HANDLERS ---
-
   const changeDate = (days) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(selectedDate.getDate() + days);
@@ -146,11 +119,9 @@ const Notebook = () => {
   }, [selectedDate]);
 
   // --- RENDER ---
-
   return (
     <div className="min-h-screen bg-[#F3F4F6] p-4 md:p-8 font-sans text-gray-800">
       <div className="max-w-4xl mx-auto space-y-6">
-        
         {/* Header Notebook */}
         <div className="flex items-center gap-3 mb-2">
             <BookOpen className="text-green-600" size={32} />
@@ -173,7 +144,7 @@ const Notebook = () => {
           </button>
         </div>
 
-        {/* Ringkasan Kalori (Summary Card) */}
+        {/* Ringkasan Kalori */}
         <div className="grid grid-cols-3 gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Masuk</p>
@@ -208,7 +179,6 @@ const Notebook = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
-            
             {/* Kolom Makanan */}
             <div className="space-y-4">
               <h3 className="flex items-center gap-2 text-lg font-bold text-gray-700 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
@@ -275,7 +245,6 @@ const Notebook = () => {
                 </div>
               )}
             </div>
-
           </div>
         )}
       </div>
@@ -305,17 +274,13 @@ const Notebook = () => {
             <div className="flex bg-gray-100 p-1.5 rounded-xl mb-6">
               <button 
                 onClick={() => setLogType('food')}
-                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                  logType === 'food' ? 'bg-white shadow-sm text-green-600' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${logType === 'food' ? 'bg-white shadow-sm text-green-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Makanan
               </button>
               <button 
                 onClick={() => setLogType('exercise')}
-                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                  logType === 'exercise' ? 'bg-white shadow-sm text-orange-500' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${logType === 'exercise' ? 'bg-white shadow-sm text-orange-500' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 Olahraga
               </button>

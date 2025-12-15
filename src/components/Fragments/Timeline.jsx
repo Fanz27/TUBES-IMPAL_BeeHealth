@@ -6,11 +6,18 @@ const Timeline = () => {
     // --- STATE ---
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState();
+    const [roleId, setRoleId] = useState();
     
     // State untuk Modal Create Post
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newPostContent, setNewPostContent] = useState("");
     const [isCreating, setIsCreating] = useState(false);
+
+    //State untuk Komen
+    const [commentText, setCommentText] = useState('');
+    const [activePostId, setActivePostId] = useState(null);
+    const [commentLoading, setCommentLoading] = useState(false);
     
     // State untuk Upload Gambar
     const [selectedFile, setSelectedFile] = useState(null);
@@ -28,16 +35,12 @@ const Timeline = () => {
     });
 
     // Mock Data untuk Meal
-    const meals = [
-        { name: "Sarapan", calories: 506, items: [
-            { name: "Bubur Ayam", portion: "1 porsi", cal: 376 },
-            { name: "Tahu Isi", portion: "1 porsi", cal: 174 }
-        ]},
-        { name: "Makan Siang", calories: 506, items: [] },
-        { name: "Makan Malam", calories: 506, items: [] },
-        { name: "Kudapan", calories: 506, items: [] },
-        { name: "Kudapan", calories: 506, items: [] },
-    ];
+    const [meals, setMeals] = useState({
+        SARAPAN: [],
+        SIANG: [],
+        MALAM: [],
+        KUDAPAN: []
+    });
 
     const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     const streakData = [true, true, true, true, true, false, false];
@@ -45,12 +48,16 @@ const Timeline = () => {
     // State Expand Meal
     const [expandMeals, setExpandMeals] = useState({0: true});
 
+    
+
     useEffect(() => {
         fetchPosts();
     }, []);
 
     useEffect(() => {
         const nama = localStorage.getItem("nama");
+        const idPengguna = localStorage.getItem("userId");
+        const role = localStorage.getItem("role");
 
         if (nama) {
             setUserData(prev => ({
@@ -58,10 +65,55 @@ const Timeline = () => {
             username: nama
             }));
         }
+        if (idPengguna) {
+            setCurrentUserId(idPengguna); // <-- Simpan ID ke state
+        }
+        if (role) {
+            setRoleId(role);
+        }
     }, []);
 
 
     // --- FETCH DATA (PERBAIKAN SINTAKS & LOGIKA URL) ---
+    const fetchMeals = async () => {
+        try {
+            const res = await api.get('/log/food');
+
+            const grouped = {
+                SARAPAN: [],
+                SIANG: [],
+                MALAM: [],
+                KUDAPAN: []
+            };
+
+            res.data.data.forEach(item => {
+                grouped[item.mealType].push(item);
+            });
+
+            setMeals(grouped);
+        } catch (err) {
+            console.log("Gagal mengambil data makanan", err);
+        }
+    };
+
+    const getMealCalories = items =>
+        items.reduce((sum, i) => sum + i.calories, 0);
+
+
+    useEffect(() => {
+        fetchMeals();
+    }, [])
+
+    const toggleMeals = (type) => {
+        setExpandMeals(prev => ({
+            ...prev,
+            [type]: !prev[type]
+        }));
+    };
+    console.log('MEALS:', meals);
+
+
+
    const fetchPosts = async () => {
         try {
             setLoading(true);
@@ -92,10 +144,14 @@ const Timeline = () => {
                     userImage: "https://i.pravatar.cc/150?img=11",
                     content: post.deskripsi,
                     image: finalImageUrl,
-                    likes: 0,
-                    liked: false
+                    likes: post.likesCount,
+                    liked: post.liked,
+                    comments: post.comments || [],
+                    user: post.user
                 };
+
             });
+            console.log('COMMENTS DARI BE:', response.data.data[0].comments);
 
             setPosts(transformedPosts);
         } catch (err) {
@@ -179,14 +235,66 @@ const Timeline = () => {
         }
     };
 
-    const handleLike = async (id) => {
+   const handleLike = async (id) => {
         try {
-            setPosts(posts.map(p => p.id === id ? { ...p, liked: !p.liked } : p));
-            await api.post(`/post/${id}/like`);
+            const res = await api.post(`/post/${id}/like`);
+
+            const action = res.data?.data?.action; // liked | unliked
+
+            setPosts(prevPosts =>
+            prevPosts.map(p =>
+                p.id === id
+                ? {
+                    ...p,
+                    liked: action === 'liked',
+                    likes: action === 'liked'
+                        ? (p.likes || 0) + 1
+                        : Math.max((p.likes || 1) - 1, 0)
+                    }
+                : p
+            )
+            );
         } catch (error) {
             console.error("Error liking post:", error);
         }
     };
+
+    const handleComment = async (postId) => {
+        if (!commentText.trim()) {
+            return;
+        }
+
+        try {
+            const res = await api.post(`/post/${postId}/comment`, {
+                text: commentText,
+            });
+
+            setPosts(prev => (
+                prev.map(post => post.id === postId ? {
+                    ...post, 
+                    comments: [res.data.data, ...(post.comments || [])]
+                }: post)
+            ));
+            setCommentText('');
+            setActivePostId(null);
+        } catch (err) {
+            console.log("Gagal menambahkan komentar", err)
+        } finally {
+            setCommentLoading(false);
+        }
+    };
+
+    const handleDeletePost = async (id) => {
+        if (!confirm("Yakin mau menghapus postingan ini?")) return;
+        try {
+            await api.delete(`/post/${id}`);
+            setPosts(prev => prev.filter(post => post.id !== id));
+        } catch (err) {
+            console.log("Gagal menghapus postingan", err);
+        }
+    };
+
+
 
     const toggleMeal = (index) => {
         setExpandMeals((prev) => ({
@@ -202,10 +310,10 @@ const Timeline = () => {
                 
                 {/* Header Section */}
                 <div className="flex justify-between items-center mb-6 lg:ml-[26%] lg:w-[74%] pl-4">
-                    <button className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-sm text-gray-700 font-medium hover:bg-gray-50">
+                    {/* <button className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-sm text-gray-700 font-medium hover:bg-gray-50">
                         <span>Following</span>
                         <ChevronDown size={16} />
-                    </button>
+                    </button> */}
                     
                     <button 
                         onClick={() => setIsModalOpen(true)}
@@ -297,32 +405,31 @@ const Timeline = () => {
                             </div>
 
                             <div className="space-y-4">
-                                {meals.map((meal, idx) => (
-                                    <div key={idx} className="border-b border-gray-50 last:border-0 pb-2 last:pb-0">
-                                        <div className="flex justify-between items-center mb-1 cursor-pointer select-none" 
-                                            onClick={() => toggleMeal(idx)}>
-                                                <span className="text-sm font-bold text-gray-700">{meal.name}</span>
-                                                <div className="flex items-center space-x-2">
-                                                    <span className="text-sm font-bold text-gray-700">{meal.calories}</span>
-                                                    <ChevronDown size={14} className={`text-gray-400 transition-transform duration-300 ${expandMeals[idx] ? 'rotate-180' : ''}`} />
-                                                </div>
+                                {Object.entries(meals).map(([mealType, items], idx) => (
+                                    <div key={mealType} className="border-b pb-2">
+                                        
+                                        <div
+                                        className="flex justify-between items-center cursor-pointer"
+                                        onClick={() => toggleMeal(mealType)}
+                                        >
+                                        <span className="font-bold text-gray-700">
+                                            {mealType}
+                                        </span>
+
+                                        <span className="font-bold">
+                                            {items.reduce((s, i) => s + i.calories, 0)} kcal
+                                        </span>
                                         </div>
-                                        {/* Sub Items */}
-                                        {expandMeals[idx] && meal.items.length > 0 && (
-                                            <div className="pl-1 space-y-1 mt-1">
-                                                {meal.items.map((item, i) => (
-                                                    <div key={i} className="flex justify-between text-[10px] text-gray-500">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-blue-400 font-medium">{item.name}</span>
-                                                            <span className="text-gray-400">{item.portion}</span>
-                                                        </div>
-                                                        <span>{item.cal}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
+
+                                        {expandMeals[mealType] && items.map(item => (
+                                        <div key={item.id} className="pl-2 text-xs flex justify-between">
+                                            <span>{item.foodName}</span>
+                                            <span>{item.calories}</span>
+                                        </div>
+                                        ))}
                                     </div>
                                 ))}
+
                             </div>
 
                             {/* Warning Banner */}
@@ -338,7 +445,7 @@ const Timeline = () => {
                             <div className="text-center py-10 text-gray-500">Loading posts...</div>
                         ) : (
                             posts.map((post) => (
-                                <div key={post.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div key={post.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-0">
                                     {/* Image Post */}
                                     {post.image && (
                                         <div className="w-full h-80 bg-gray-200 relative">
@@ -362,24 +469,84 @@ const Timeline = () => {
                                         {/* Action Buttons */}
                                         <div className="flex items-center justify-between border-t border-gray-100 pt-3">
                                             <div className="flex items-center space-x-4">
-                                                <button onClick={() => handleLike(post.id)} className="flex items-center space-x-1 group">
-                                                    <div className={`p-1.5 rounded-full ${post.liked ? 'bg-red-50' : 'bg-gray-100 group-hover:bg-red-50'}`}>
-                                                        <Heart size={18} className={post.liked ? "fill-red-500 text-red-500" : "text-gray-500"} />
+                                                <button
+                                                    onClick={() => handleLike(post.id)}
+                                                    className="flex items-center space-x-1 group"
+                                                    >
+                                                    <div
+                                                        className={`p-1.5 rounded-full transition ${
+                                                        post.liked
+                                                            ? 'bg-red-50'
+                                                            : 'bg-gray-100 group-hover:bg-red-50'
+                                                        }`}
+                                                    >
+                                                        <Heart
+                                                        size={18}
+                                                        className={
+                                                            post.liked
+                                                            ? 'fill-red-500 text-red-500'
+                                                            : 'text-gray-500 group-hover:text-red-500'
+                                                        }
+                                                        />
                                                     </div>
-                                                    <span className="text-xs font-medium text-gray-500">Liked</span>
+
+                                                    <span className="text-xs font-medium text-gray-500">
+                                                        {post.likes || 0} {post.likes === 1 ? 'Like' : 'Likes'}
+                                                    </span>
                                                 </button>
-                                                
-                                                {/* Stacked Avatars (Visual Only) */}
-                                                <div className="flex -space-x-2">
-                                                    <div className="w-6 h-6 rounded-full bg-red-400 border-2 border-white"></div>
-                                                    <div className="w-6 h-6 rounded-full bg-green-400 border-2 border-white"></div>
-                                                    <div className="w-6 h-6 rounded-full bg-blue-400 border-2 border-white"></div>
-                                                </div>
                                             </div>
 
-                                            <button className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                                            <button
+                                                onClick={() =>
+                                                    setActivePostId(activePostId === post.id ? null : post.id)
+                                                }
+                                                className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                                            >
                                                 <MessageCircle size={18} className="text-gray-500" />
                                             </button>
+
+                                            {activePostId === post.id && (
+                                                <div className="mt-3 border-t pt-3 space-y-2">
+                                                    <input
+                                                        value={commentText}
+                                                        onChange={(e) => setCommentText(e.target.value)}
+                                                        placeholder="Tulis komentar..."
+                                                        className="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                                    />
+
+                                                    <button
+                                                        disabled={commentLoading || !commentText.trim()}
+                                                        onClick={() => handleComment(post.id)}
+                                                        className="px-3 py-1.5 bg-yellow-500 text-white text-sm rounded-lg disabled:bg-gray-300"
+                                                    >
+                                                        {commentLoading ? 'Mengirim...' : 'Kirim'}
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                           {post.comments?.length > 0 && (
+                                                <div className="mt-3">
+                                                    <div
+                                                    className={`overflow-y-auto space-y-2 border-t border-gray-100 pt-2 ${post.comments.length > 3 ? 'max-h-48' : ''}`}
+                                                    >
+                                                    {post.comments.map(c => (
+                                                        <div key={c.id} className="bg-gray-50 p-2 rounded-lg text-sm">
+                                                        <span className="font-semibold">{c.user?.nama || c.user?.username}</span>{' '}
+                                                        {c.text}
+                                                        </div>
+                                                    ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {roleId === "ADMIN" || post.user?.id === currentUserId ? (
+                                                <button
+                                                    onClick={() => handleDeletePost(post.id)}
+                                                    className="text-red-500 hover:text-red-700 text-xs"
+                                                >
+                                                    Hapus
+                                                </button>
+                                            ) : null}
                                         </div>
                                     </div>
                                 </div>
