@@ -8,8 +8,17 @@ const api = axios.create({
   headers: {
     'ngrok-skip-browser-warning': 'true',
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
   },
   withCredentials: true,
 });
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("AuthToken"); // ⬅ AMBIL TERBARU
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 export default api; 
