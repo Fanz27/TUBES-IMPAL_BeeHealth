@@ -35,8 +35,8 @@ const Notebook = () => {
 
   // State Form Input
   const [formData, setFormData] = useState({
-    foodId: '', 
-    mealType: 'LUNCH', // Default value disesuaikan (biasanya LUNCH/BREAKFAST/DINNER)
+    foodNama: '', 
+    mealType: 'MAKAN_SIANG', // Default value disesuaikan (biasanya LUNCH/BREAKFAST/DINNER)
     porsi: 1,
     exerciseId: '', 
     durationInMinute: 30
@@ -89,8 +89,8 @@ const Notebook = () => {
     e.preventDefault();
 
     // Validasi sederhana sebelum kirim ke server
-    if (logType === 'food' && !formData.foodId) {
-        alert("Mohon isi ID Makanan!");
+    if (logType === 'food' && !formData.foodNama) {
+        alert("Mohon isi Nama Makanan!");
         return;
     }
     if (logType === 'exercise' && !formData.exerciseId) {
@@ -104,14 +104,14 @@ const Notebook = () => {
       if (logType === 'food') {
         // Kirim data Makanan
         await api.post('/log/food', {
-          foodId: parseInt(formData.foodId),
+          foodNama: formData.foodNama,
           mealType: formData.mealType,
           porsi: parseFloat(formData.porsi)
         });
       } else {
         // Kirim data Olahraga
         await api.post('/log/exercise', {
-          exerciseId: parseInt(formData.exerciseId),
+          exerciseId: formData.exerciseId,
           durationInMinute: parseInt(formData.durationInMinute)
         });
       }
@@ -122,8 +122,8 @@ const Notebook = () => {
       
       // Reset Form agar bersih kembali
       setFormData({
-        foodId: '', 
-        mealType: 'LUNCH',
+        foodNama: '', 
+        mealType: 'MAKAN_SIANG',
         porsi: 1,
         exerciseId: '', 
         durationInMinute: 30
@@ -141,7 +141,7 @@ const Notebook = () => {
       if (serverMsg) {
         alert(`Gagal: ${serverMsg}`); // Pesan langsung dari backend (misal: "Food ID not found")
       } else if (status === 400) {
-        alert("Gagal: Data tidak valid. Cek apakah ID Makanan/Olahraga benar ada di database.");
+        alert("Gagal: Data tidak valid. Cek apakah Nama Makanan/Olahraga benar ada di database.");
       } else if (status === 500) {
         alert("Gagal: Terjadi kesalahan pada Server (Internal Server Error).");
       } else {
@@ -352,17 +352,17 @@ const Notebook = () => {
               {logType === 'food' ? (
                 <>
                   <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">ID Makanan</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nama Makanan</label>
                     <input 
-                      type="number" 
-                      name="foodId"
-                      value={formData.foodId}
+                      type="text" 
+                      name="foodNama"
+                      value={formData.foodNama}
                       onChange={handleInputChange}
-                      placeholder="Cth: 1"
+                      placeholder="Cth: Bakso"
                       className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:bg-white outline-none transition-all"
                       required
                     />
-                    <p className="text-[10px] text-gray-400 mt-1">*ID harus sesuai tabel Database (Food)</p>
+                    <p className="text-[10px] text-gray-400 mt-1">*Nama harus sesuai tabel Database (Food)</p>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Waktu Makan</label>
@@ -373,10 +373,10 @@ const Notebook = () => {
                         onChange={handleInputChange}
                         className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 focus:ring-2 focus:ring-green-500 outline-none appearance-none"
                         >
-                        <option value="BREAKFAST">Sarapan</option>
-                        <option value="LUNCH">Makan Siang</option>
-                        <option value="DINNER">Makan Malam</option>
-                        <option value="SNACK">Cemilan</option>
+                        <option value="SARAPAN">Sarapan</option>
+                        <option value="MAKAN_SIANG">Makan Siang</option>
+                        <option value="MAKAN_MALAM">Makan Malam</option>
+                        <option value="KUDAPAN">Cemilan</option>
                         </select>
                         <div className="absolute right-3 top-3.5 pointer-events-none text-gray-500">▼</div>
                     </div>
