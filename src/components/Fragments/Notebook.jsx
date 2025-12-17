@@ -7,30 +7,36 @@ import {
   Plus, 
   X,
   Calendar,
-  BookOpen
+  BookOpen,
+  Loader2 // Icon loading tambahan
 } from 'lucide-react';
 
-import api from '../../api'; // Pakai instance axios yang sudah dikonfigurasi di api.js
+import api from '../../api'; // Pastikan path ini sesuai dengan struktur foldermu
 
 const Notebook = () => {
   // --- STATE ---
   const [selectedDate, setSelectedDate] = useState(new Date());
+  
+  // State Data Log
   const [logs, setLogs] = useState({
     foodLogs: [],
     exerciseLogs: [],
     summary: { totalCaloriesIn: 0, totalCaloriesOut: 0 }
   });
+
+  // State UI
   const [loading, setLoading] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false); // Loading khusus tombol simpan
   const [error, setError] = useState(null);
 
   // State Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [logType, setLogType] = useState('food'); // 'food' atau 'exercise'
 
-  // State Form
+  // State Form Input
   const [formData, setFormData] = useState({
     foodId: '', 
-    mealType: 'BREAKFAST',
+    mealType: 'LUNCH', // Default value disesuaikan (biasanya LUNCH/BREAKFAST/DINNER)
     porsi: 1,
     exerciseId: '', 
     durationInMinute: 30
@@ -38,6 +44,7 @@ const Notebook = () => {
 
   // --- HELPER FUNCTIONS ---
   const formatDateForAPI = (date) => date.toISOString().split('T')[0];
+  
   const formatDateDisplay = (date) => new Intl.DateTimeFormat('id-ID', {
     weekday: 'long',
     day: 'numeric',
@@ -46,6 +53,8 @@ const Notebook = () => {
   }).format(date);
 
   // --- API CALLS ---
+  
+  // 1. GET DATA (Fetch Logs)
   const fetchDailyLogs = async () => {
     setLoading(true);
     try {
@@ -61,45 +70,85 @@ const Notebook = () => {
       });
       setError(null);
     } catch (err) {
-      console.error(err);
-      setError('Gagal memuat halaman notebook.');
+      console.error("DEBUG Fetch Error:", err);
+      // Menampilkan pesan error yang lebih ramah
+      const msg = err.response?.data?.message || "Gagal memuat data notebook. Pastikan server berjalan.";
+      setError(msg);
+
+      if (err.response?.status === 401) {
+          alert("Sesi kamu habis. Silakan login ulang.");
+          // window.location.href = '/login'; 
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // 2. POST DATA (Submit Form)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (logType === 'food' && isNaN(parseInt(formData.foodId))) {
-      alert("Masukkan harus berupa angka!!");
-      return; 
+    // Validasi sederhana sebelum kirim ke server
+    if (logType === 'food' && !formData.foodId) {
+        alert("Mohon isi ID Makanan!");
+        return;
+    }
+    if (logType === 'exercise' && !formData.exerciseId) {
+        alert("Mohon isi ID Olahraga!");
+        return;
     }
 
-    if (logType === 'exercise' && isNaN(parseInt(formData.exerciseId))) {
-      alert("Masukkan harus berupa angka!!");
-      return; 
-    }
+    setSubmitLoading(true); // Aktifkan loading di tombol
 
     try {
       if (logType === 'food') {
+        // Kirim data Makanan
         await api.post('/log/food', {
           foodId: parseInt(formData.foodId),
           mealType: formData.mealType,
           porsi: parseFloat(formData.porsi)
         });
       } else {
+        // Kirim data Olahraga
         await api.post('/log/exercise', {
           exerciseId: parseInt(formData.exerciseId),
           durationInMinute: parseInt(formData.durationInMinute)
         });
       }
 
+      // Jika Berhasil:
       setIsModalOpen(false);
-      fetchDailyLogs();
-      alert('Catatan berhasil ditambahkan ke Notebook!');
+      fetchDailyLogs(); // Refresh data halaman
+      
+      // Reset Form agar bersih kembali
+      setFormData({
+        foodId: '', 
+        mealType: 'LUNCH',
+        porsi: 1,
+        exerciseId: '', 
+        durationInMinute: 30
+      });
+      
+      alert('Berhasil menyimpan catatan!');
+
     } catch (err) {
-      alert(err.response?.data?.message || 'Gagal menyimpan catatan.');
+      console.error("DEBUG Submit Error:", err);
+      
+      // LOGIKA ERROR HANDLING YANG LEBIH BAIK
+      const serverMsg = err.response?.data?.message || err.response?.data?.error;
+      const status = err.response?.status;
+
+      if (serverMsg) {
+        alert(`Gagal: ${serverMsg}`); // Pesan langsung dari backend (misal: "Food ID not found")
+      } else if (status === 400) {
+        alert("Gagal: Data tidak valid. Cek apakah ID Makanan/Olahraga benar ada di database.");
+      } else if (status === 500) {
+        alert("Gagal: Terjadi kesalahan pada Server (Internal Server Error).");
+      } else {
+        alert("Gagal menyimpan. Periksa koneksi internet atau server.");
+      }
+    } finally {
+      setSubmitLoading(false); // Matikan loading tombol
     }
   };
 
@@ -114,32 +163,37 @@ const Notebook = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Effect: Load data saat tanggal berubah
   useEffect(() => {
     fetchDailyLogs();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
   // --- RENDER ---
   return (
     <div className="min-h-screen bg-[#F3F4F6] p-4 md:p-8 font-sans text-gray-800">
       <div className="max-w-4xl mx-auto space-y-6">
+        
         {/* Header Notebook */}
         <div className="flex items-center gap-3 mb-2">
-            <BookOpen className="text-green-600" size={32} />
-            <h1 className="text-3xl font-bold text-gray-800">Notebook Harian</h1>
+            <div className="bg-white p-2 rounded-xl shadow-sm">
+                <BookOpen className="text-green-600" size={28} />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Notebook Harian</h1>
         </div>
 
         {/* Navigasi Tanggal */}
         <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-50 rounded-lg transition-colors text-gray-500">
+          <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500">
             <ChevronLeft size={24} />
           </button>
           
-          <div className="flex items-center gap-2 font-bold text-lg text-gray-700">
+          <div className="flex items-center gap-3 font-bold text-lg text-gray-700">
             <Calendar size={20} className="text-green-500" />
             <span>{formatDateDisplay(selectedDate)}</span>
           </div>
 
-          <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-50 rounded-lg transition-colors text-gray-500">
+          <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500">
             <ChevronRight size={24} />
           </button>
         </div>
@@ -147,35 +201,43 @@ const Notebook = () => {
         {/* Ringkasan Kalori */}
         <div className="grid grid-cols-3 gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
           <div className="space-y-1">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Masuk</p>
+            <p className="text-xs uppercase tracking-wider text-gray-400 font-bold">Masuk</p>
             <p className="text-2xl font-bold text-green-600">
               {logs.summary?.totalCaloriesIn || 0}
             </p>
           </div>
           
           <div className="space-y-1 border-x border-gray-100">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Netto</p>
+            <p className="text-xs uppercase tracking-wider text-gray-400 font-bold">Netto</p>
             <p className="text-3xl font-extrabold text-gray-800">
-              {logs.summary.totalCaloriesIn - logs.summary.totalCaloriesOut}
+              {(logs.summary?.totalCaloriesIn || 0) - (logs.summary?.totalCaloriesOut || 0)}
             </p>
           </div>
 
           <div className="space-y-1">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Terbakar</p>
+            <p className="text-xs uppercase tracking-wider text-gray-400 font-bold">Terbakar</p>
             <p className="text-2xl font-bold text-orange-500">
-              {logs.summary.totalCaloriesOut}
+              {logs.summary?.totalCaloriesOut || 0}
             </p>
           </div>
         </div>
 
         {/* Content Logs */}
         {loading ? (
-           <div className="flex justify-center py-12">
-             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+           <div className="flex flex-col items-center justify-center py-16 gap-3">
+             <Loader2 className="animate-spin text-green-600" size={32} />
+             <p className="text-gray-400 text-sm animate-pulse">Memuat catatan...</p>
            </div>
         ) : error ? (
-          <div className="text-center text-red-500 py-10 bg-red-50 rounded-xl border border-red-100">
-            {error}
+          <div className="text-center text-red-500 py-10 bg-red-50 rounded-xl border border-red-100 px-4">
+            <p className="font-bold">Terjadi Kesalahan</p>
+            <p className="text-sm mt-1">{error}</p>
+            <button 
+                onClick={fetchDailyLogs}
+                className="mt-4 px-4 py-2 bg-white border border-red-200 text-red-500 rounded-lg text-sm hover:bg-red-50 transition"
+            >
+                Coba Lagi
+            </button>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
@@ -252,7 +314,7 @@ const Notebook = () => {
       {/* Floating Action Button */}
       <button 
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-8 right-8 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-transform hover:scale-105 active:scale-95 z-40"
+        className="fixed bottom-8 right-8 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-transform hover:scale-105 active:scale-95 z-40 flex items-center justify-center"
       >
         <Plus size={28} />
       </button>
@@ -292,7 +354,7 @@ const Notebook = () => {
                   <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">ID Makanan</label>
                     <input 
-                      type="text" 
+                      type="number" 
                       name="foodId"
                       value={formData.foodId}
                       onChange={handleInputChange}
@@ -300,7 +362,7 @@ const Notebook = () => {
                       className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:bg-white outline-none transition-all"
                       required
                     />
-                    <p className="text-[10px] text-gray-400 mt-1">*Pastikan ID ada di database (Tabel Food)</p>
+                    <p className="text-[10px] text-gray-400 mt-1">*ID harus sesuai tabel Database (Food)</p>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Waktu Makan</label>
@@ -338,7 +400,7 @@ const Notebook = () => {
                   <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">ID Olahraga</label>
                     <input 
-                      type="text" 
+                      type="number" 
                       name="exerciseId"
                       value={formData.exerciseId}
                       onChange={handleInputChange}
@@ -346,7 +408,7 @@ const Notebook = () => {
                       className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
                       required
                     />
-                    <p className="text-[10px] text-gray-400 mt-1">*Pastikan ID ada di database (Tabel Exercise)</p>
+                    <p className="text-[10px] text-gray-400 mt-1">*ID harus sesuai tabel Database (Exercise)</p>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Durasi (Menit)</label>
@@ -365,13 +427,21 @@ const Notebook = () => {
 
               <button 
                 type="submit" 
-                className={`w-full font-bold py-3.5 rounded-xl transition-all shadow-md mt-6 text-white
+                disabled={submitLoading}
+                className={`w-full font-bold py-3.5 rounded-xl transition-all shadow-md mt-6 text-white flex justify-center items-center gap-2
                     ${logType === 'food' 
                         ? 'bg-green-600 hover:bg-green-700 shadow-green-200' 
                         : 'bg-orange-500 hover:bg-orange-600 shadow-orange-200'
-                    }`}
+                    } ${submitLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                Simpan Catatan
+                {submitLoading ? (
+                    <>
+                        <Loader2 className="animate-spin" size={20} />
+                        Menyimpan...
+                    </>
+                ) : (
+                    "Simpan Catatan"
+                )}
               </button>
             </form>
           </div>
