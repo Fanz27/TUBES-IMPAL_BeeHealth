@@ -18,6 +18,7 @@ import TimelinePage from './pages/timelinePage.jsx'
 // Import Layout & Protected Route
 import ProtectedRoute from './components/Fragments/ProtectedRoute.jsx'
 import MainLayout from './components/Layouts/MainLayouts.jsx' // <--- IMPORT INI
+import PageAddOlahraga from './pages/addOlahragaPage.jsx'
 
 const router = createBrowserRouter([
   // --- PUBLIC ROUTES (Tanpa Navbar) ---
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: "/addMakanan",
         element: <ProtectedRoute requiredRole="ADMIN"><PageAddMakanan/></ProtectedRoute>
+      },
+      {
+        path:"/addOlahraga",
+        element: <ProtectedRoute requiredRole="ADMIN"><PageAddOlahraga></PageAddOlahraga></ProtectedRoute>
       },
       {
         path: "/Rekomendasi",

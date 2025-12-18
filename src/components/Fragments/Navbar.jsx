@@ -36,7 +36,8 @@ const Navbar = () => {
     { name: 'Calculate', path: '/calculate', show: role !== 'ADMIN' },
     { name: 'Notebook', path: '/notebook', show: role !== 'ADMIN' },
     { name: 'Rekomendasi', path: '/Rekomendasi', show: role !== 'ADMIN' },
-    { name: 'Add', path: '/addMakanan', show: role === 'ADMIN' },
+    { name: 'Add Makanan', path: '/addMakanan', show: role === 'ADMIN' },
+    { name:'Add Olahraga', path: '/addOlahraga', show: role == 'ADMIN'},
     { name: 'Timeline', path: '/Timeline', show: true },
     { name: 'About', path: '/About', show: true },
   ];

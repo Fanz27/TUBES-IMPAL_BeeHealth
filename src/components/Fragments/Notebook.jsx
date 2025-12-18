@@ -88,10 +88,10 @@ const Notebook = () => {
     }
   };
 
-  const handleFoodSearch = async () => {
+  const handleFoodSearch = async (text) => {
     setFormData(prev => ({ ...prev, foodNama: text}));
 
-    if (!text || text.length < 2) {
+    if (!text || text.length < 0) {
       setFoodSugestion([]);
       setShowSugesstion(false);
       return;
@@ -115,8 +115,8 @@ const Notebook = () => {
     setShowSugesstion(false);
   };
   
-  const handleExerciseSearch = async (exercise) => {
-    setFormData(prev => ({ ...prev, exerciseNama: text}));
+  const handleExerciseSearch = async (text) => {
+    setFormData(prev => ({ ...prev, namaKegiatan: text}));
     
     if (!text || text.length < 2) {
       setExerciseSugesstion([]);
@@ -133,10 +133,10 @@ const Notebook = () => {
     }
   }
   
-  const selectSugesstionExercise = (food) => {
+  const selectSugesstionExercise = (exercise) => {
     setFormData(prev => ({
       ...prev,
-      exerciseNama: exercise.nama,
+      namaKegiatan: exercise.namaKegiatan,
     }));
     setExerciseSugesstion([]);
     setShowSugesstion(false);
