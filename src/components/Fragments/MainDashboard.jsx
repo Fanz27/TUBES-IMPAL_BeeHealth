@@ -1,12 +1,12 @@
 import salad2 from "/images/salad2.png";
 import makananSehat from "/images/makananSehat.png";
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const MainDashboard = (props) => {
+const MainDashboard = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading]= useState(true);
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
   const Aktif = (path) => location.pathname === path;
   
@@ -49,171 +49,156 @@ const MainDashboard = (props) => {
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"></div>
       </div>
     );
   }
 
-  
   return (
-    <>
-      <section className="container mx-auto py-16 px-4">
-        <div className="flex flex-col gap-24">
-          {/* Bagian 1 - Text Kiri, Gambar Kanan */}
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="md:w-1/2 text-center md:text-left">
-              <h2 className="text-3xl font-bold mb-4">
-                Pola Makan Baik Buat Tubuh Sehat
-              </h2>
-              <p className="text-gray-600">
-                Ingin tubuh sehat dan bugar? Sangat tepat anda mengunjungi
-                BeeHealth. BeeHealth menyediakan fitur yang anda butuhkan dalam
-                mengelola pola makan yang baik.
-              </p>
-            </div>
-            <div className="md:w-1/2 flex justify-center">
-              <img
-                src={salad2}
-                alt="Salad Buah"
-                className="w-full max-w-md rounded-lg"
-              />
-            </div>
+    // WRAPPER UTAMA: Menggunakan max-w-7xl agar lurus dengan Navbar & Footer
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-20">
+      
+      {/* SECTION 1: FITUR */}
+      <section className="flex flex-col gap-16">
+        {/* Fitur 1 */}
+        <div className="flex flex-col md:flex-row items-center gap-8 lg:gap-16">
+          <div className="md:w-1/2 text-center md:text-left">
+            <h2 className="text-3xl font-bold mb-4 text-gray-800">
+              Pola Makan Baik Buat Tubuh Sehat
+            </h2>
+            <p className="text-gray-600 leading-relaxed text-lg">
+              Ingin tubuh sehat dan bugar? Sangat tepat anda mengunjungi
+              BeeHealth. BeeHealth menyediakan fitur yang anda butuhkan dalam
+              mengelola pola makan yang baik.
+            </p>
           </div>
+          <div className="md:w-1/2 flex justify-center">
+            <img
+              src={salad2}
+              alt="Salad Buah"
+              className="w-full max-w-sm rounded-2xl shadow-lg object-cover"
+            />
+          </div>
+        </div>
 
-          {/* Bagian 2 - Gambar Kiri, Text Kanan */}
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            {/* Gambar di sebelah kiri (desktop) */}
-            <div className="md:w-1/2 flex justify-center">
-              <img
-                src={makananSehat}
-                alt="Salad Buah 2"
-                className="w-full max-w-md rounded-lg"
-              />
-            </div>
-            
-            {/* Text di sebelah kanan (desktop) */}
-            <div className="md:w-1/2 text-center md:text-left">
-              <h2 className="text-3xl font-bold mb-4">
-                Catat Lebih dari 10 Juta Makanan
-              </h2>
-              <p className="text-gray-600">
-                Lihat rincian kalori dan bandingkan ukuran porsi serta rasakan apa yang akan terjadi.
-              </p>
-            </div>
+        {/* Fitur 2 */}
+        <div className="flex flex-col-reverse md:flex-row items-center gap-8 lg:gap-16">
+          <div className="md:w-1/2 flex justify-center">
+            <img
+              src={makananSehat}
+              alt="Makanan Sehat"
+              className="w-full max-w-sm rounded-2xl shadow-lg object-cover"
+            />
+          </div>
+          <div className="md:w-1/2 text-center md:text-left">
+            <h2 className="text-3xl font-bold mb-4 text-gray-800">
+              Catat Lebih dari 10 Juta Makanan
+            </h2>
+            <p className="text-gray-600 leading-relaxed text-lg">
+              Lihat rincian kalori dan bandingkan ukuran porsi serta rasakan apa yang akan terjadi pada tubuhmu.
+            </p>
           </div>
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto p-8 bg-white">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Bagikan Keberhasilanmu dengan orang lain
+      {/* SECTION 2: TESTIMONI (Carousel) */}
+      <section className="bg-white rounded-3xl p-10">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Bagikan Keberhasilanmu
           </h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Setiap hari, pengguna BeeHealth membagikan keberhasilan mereka dalam menciptakan pola makan yang baik. 
-            Dapatkan motivasi mu bersama timeline BeeHealth dan raih tujuanmu.
+          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+            Dapatkan motivasi bersama timeline BeeHealth dan raih tujuanmu.
           </p>
         </div>
 
-        {/* Carousel Container */}
-        <div className="relative bg-gray-50 rounded-2xl p-12 shadow-sm">
-          {/* Navigation Buttons */}
+        <div className="relative bg-green-50/50 rounded-3xl p-6 md:p-12 border border-green-100">
+          {/* Tombol Navigasi */}
           <button
             onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-colors z-10"
-            aria-label="Previous story"
+            className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:bg-green-500 hover:text-white transition-all z-10 border border-gray-100"
           >
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
+            <ChevronLeft size={24} />
           </button>
           
           <button
             onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-colors z-10"
-            aria-label="Next story"
+            className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:bg-green-500 hover:text-white transition-all z-10 border border-gray-100"
           >
-            <ChevronRight className="w-6 h-6 text-gray-600" />
+            <ChevronRight size={24} />
           </button>
 
-          {/* Card Content */}
-          <div className="flex items-center justify-center gap-8">
-            {/* Image */}
+          {/* Konten Card */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
+            {/* Foto */}
             <div className="flex-shrink-0">
               <img
                 src={stories[currentIndex].image}
                 alt={stories[currentIndex].name}
-                className="w-80 h-96 object-cover rounded-2xl shadow-xl"
+                className="w-48 h-64 md:w-60 md:h-72 object-cover rounded-2xl shadow-xl border-4 border-white"
               />
             </div>
 
-            {/* Story Details */}
-            <div className="flex-1 max-w-md">
-              <div className="bg-white rounded-2xl p-8 shadow-lg">
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    {stories[currentIndex].name}
-                  </h3>
-                  <div className="flex gap-4 text-sm text-gray-600">
-                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
-                      {stories[currentIndex].achievement}
-                    </span>
-                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
-                      {stories[currentIndex].duration}
-                    </span>
-                  </div>
+            {/* Teks */}
+            <div className="max-w-lg text-center md:text-left">
+              <div className="mb-4">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  {stories[currentIndex].name}
+                </h3>
+                <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+                    {stories[currentIndex].achievement}
+                  </span>
+                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+                    {stories[currentIndex].duration}
+                  </span>
                 </div>
-                
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  {stories[currentIndex].story}
-                </p>
-                
-                <div className="flex gap-3">
-                  <Link
-                    to="/Timeline"
-                    className={`flex-1 text-center bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors ${
-                      Aktif('/Timeline') ? 'bg-green-500 text-white' : ''
-                    }`}
-                  >
-                    Bagikan Ceritamu
-                  </Link>
-                  <Link
-                    to="/Timeline"
-                    className={`flex-1 text-center bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors ${
-                      Aktif('/Timeline') ? 'bg-green-500 text-white' : ''
-                    }`}
-                  >
-                    Lihat Timeline
-                  </Link>
-                </div>
+              </div>
+              
+              <blockquote className="text-gray-700 text-lg leading-relaxed mb-8 italic">
+                "{stories[currentIndex].story}"
+              </blockquote>
+              
+              <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                <Link
+                  to="/Timeline"
+                  className={`px-6 py-3 rounded-xl font-semibold transition-all shadow-sm ${
+                    Aktif('/Timeline') ? 'bg-green-600 text-white' : 'bg-green-500 text-white hover:bg-green-600 hover:shadow-md'
+                  }`}
+                >
+                  Bagikan Cerita
+                </Link>
+                <Link
+                  to="/Timeline"
+                  className="px-6 py-3 rounded-xl font-semibold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                >
+                  Lihat Timeline
+                </Link>
               </div>
             </div>
           </div>
 
-          {/* Dots Indicator */}
+          {/* Indikator Titik */}
           <div className="flex justify-center gap-2 mt-8">
             {stories.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`h-2 rounded-full transition-all ${
-                  index === currentIndex 
-                    ? 'w-8 bg-green-500' 
-                    : 'w-2 bg-gray-300 hover:bg-gray-400'
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex ? 'w-8 bg-green-500' : 'w-2 bg-gray-300'
                 }`}
-                aria-label={`Go to story ${index + 1}`}
               />
             ))}
           </div>
         </div>
-      </div>
-    </>
+      </section>
+    </div>
   );
 };
 

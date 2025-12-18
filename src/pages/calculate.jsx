@@ -4,7 +4,6 @@ import Navbar from "../components/Fragments/Navbar";
 const CalculatePage = () => {
     return (
         <>
-        <Navbar></Navbar>
         <CalorieCalculate/>
         </>
     )

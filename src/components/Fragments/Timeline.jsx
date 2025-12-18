@@ -2,12 +2,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Flame, Heart, MessageCircle, ChevronDown, Plus, Utensils, Flag, X, Image as ImageIcon, Trash2 } from 'lucide-react';
 import api, { API_URL } from '../../api'; 
 
-const Timeline = () => {
+const Timeline = ({selectedDate = new Date()}) => {
     // --- STATE ---
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentUserId, setCurrentUserId] = useState();
     const [roleId, setRoleId] = useState();
+    // const [selectedDate, setSelectedDate] = useState(new Date());
+
     
     // State Modal & Form
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,23 +30,35 @@ const Timeline = () => {
         streakCount: 5, 
         username: 'Arif',
         userImage: 'https://i.pravatar.cc/150?img=12',
-        calories: 1641,
+        calories: 0,
         targetCalories: 2000,
         consumed: 1641,
         target: 1412
     });
 
     const [meals, setMeals] = useState({
-        SARAPAN: [], SIANG: [], MALAM: [], KUDAPAN: []
+        MAKAN_PAGI: [], MAKAN_SIANG: [], MAKAN_MALAM: [], KUDAPAN: []
     });
 
     const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     const streakData = [true, true, true, true, true, false, false];
     const [expandMeals, setExpandMeals] = useState({0: true});
 
+    const formatDate = (date) => {
+        if (!date) return "Tanggal tidak valid!!"
+        return new Date(date).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+
+
     useEffect(() => {
         fetchPosts();
-        fetchMeals();
+
+        fetchUserStats();
         
         const nama = localStorage.getItem("nama");
         const idPengguna = localStorage.getItem("userId");
@@ -55,21 +69,72 @@ const Timeline = () => {
         if (role) setRoleId(role);
     }, []);
 
-    // --- FETCH MEALS ---
-    const fetchMeals = async () => {
+    const fetchUserStats = async () => {
         try {
-            const res = await api.get('/log/food');
-            const grouped = { SARAPAN: [], SIANG: [], MALAM: [], KUDAPAN: [] };
-            if(res.data && res.data.data) {
+            const userId = localStorage.getItem("userId");
+            if (!userId) return;
+
+            const res = await api.get(`/user/stats`);
+
+            if (res.data?.data) {
+                setUserData(prev => ({
+                    ...prev,
+                    streakCount: res.data.data.streak || 0,
+                    username: res.data.data.nama || prev.username,
+                    calories: res.data.data.totalCaloriesToday ||  0,
+                    target: res.data.data.totalCalories || prev.target
+                }));
+            }
+        } catch (err) {
+            console.log("Gagal mengambil data user stats", err);
+        }
+    }
+
+    // --- FETCH MEALS ---
+    const fetchMeals = async (dateInput) => {
+        const targetDate = dateInput || selectedDate || new Date();
+        try {
+            // const today = new Date().toISOString().split('T')[0];
+            const formattedDate = targetDate.toISOString().split('T')[0];
+            console.log("Fetching date:", formattedDate);
+            const res = await api.get('/log/food',{
+                params: {date: formattedDate}
+            });
+            console.log("Raw Data dari Backend:", res.data?.data);
+            const grouped = { MAKAN_PAGI: [], MAKAN_SIANG: [], MAKAN_MALAM: [], KUDAPAN: [] };
+
+            let totalCalories = 0;
+
+            if(res.data?.data) {
                 res.data.data.forEach(item => {
-                    if (grouped[item.mealType]) grouped[item.mealType].push(item);
+                    const calorie = item.food ? item.food.kalori * item.porsi : 0;
+                    const foodNama = item.food ? item.food.nama : "Unknown";
+
+                    const cleanItem = {
+                        ...item,
+                        foodNama: foodNama,
+                        calories: calorie
+                    };
+
+                    if (grouped[item.mealType]) {
+                        grouped[item.mealType].push(cleanItem);
+                    }
+                    totalCalories += calorie;
                 });
                 setMeals(grouped);
+                setUserData(prev => ({ ...prev, calories: totalCalories, consumed: totalCalories}));
             }
         } catch (err) {
             console.log("Gagal mengambil data makanan", err);
         }
     };
+
+    useEffect(() => {
+        if (selectedDate) {          
+            fetchMeals(selectedDate);
+        };
+    }, [selectedDate]);
+
 
     // --- FETCH POSTS (PERBAIKAN UTAMA DISINI) ---
     const fetchPosts = async () => {
@@ -238,7 +303,7 @@ const Timeline = () => {
             <div className='max-w-7xl mx-auto px-4 py-8'>
                 {/* Header */}
                 <div className="flex justify-between items-center mb-6 lg:ml-[26%] lg:w-[74%] pl-4">
-                    <button className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-sm font-medium">Following<ChevronDown size={16}/></button>
+                    {/* <button className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-sm font-medium">Following<ChevronDown size={16}/></button> */}
                     <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 bg-[#FDE68A] text-yellow-800 px-4 py-2 rounded-lg font-medium shadow-sm hover:bg-[#FCD34D]">
                         <Plus size={18} /><span>Create Post</span>
                     </button>
@@ -255,7 +320,7 @@ const Timeline = () => {
                         
                         {/* Meals List */}
                         <div className='bg-white rounded-2xl shadow-sm p-5 border border-gray-100'>
-                            <h3 className="text-sm font-bold text-gray-600 mb-4 text-center">Hari ini</h3>
+                            <h3 className="text-sm font-bold text-gray-600 mb-4 text-center"> {formatDate(selectedDate)}</h3>
                             <div className="space-y-4">
                                 {Object.entries(meals).map(([mealType, items]) => (
                                     <div key={mealType} className="border-b pb-2">
