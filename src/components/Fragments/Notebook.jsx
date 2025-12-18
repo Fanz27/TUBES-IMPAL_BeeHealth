@@ -16,6 +16,9 @@ import api from '../../api'; // Pastikan path ini sesuai dengan struktur folderm
 const Notebook = () => {
   // --- STATE ---
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [foodSugestion, setFoodSugestion] = useState([]);
+  const [showSuggestion, setShowSugesstion] = useState(false);
+  const [exerciseSugesstion, setExerciseSugesstion] = useState([]);
   
   // State Data Log
   const [logs, setLogs] = useState({
@@ -39,7 +42,8 @@ const Notebook = () => {
     mealType: 'MAKAN_SIANG', // Default value disesuaikan (biasanya LUNCH/BREAKFAST/DINNER)
     porsi: 1,
     exerciseId: '', 
-    durationInMinute: 30
+    exerciseNama: '',
+    durationInMinute: 0
   });
 
   // --- HELPER FUNCTIONS ---
@@ -84,6 +88,60 @@ const Notebook = () => {
     }
   };
 
+  const handleFoodSearch = async () => {
+    setFormData(prev => ({ ...prev, foodNama: text}));
+
+    if (!text || text.length < 2) {
+      setFoodSugestion([]);
+      setShowSugesstion(false);
+      return;
+    }
+
+    try {
+      const response = await api.get(`/food/search?query=${text}`);
+      setFoodSugestion(response.data.data);
+      setShowSugesstion(true);
+    } catch (err) {
+      console.log("Gagal mencari saran makanan", err);
+    }
+  };
+
+  const selectSugesstionFood = (food) => {
+    setFormData(prev => ({
+      ...prev,
+      foodNama: food.nama,
+    }));
+    setFoodSugestion([]);
+    setShowSugesstion(false);
+  };
+  
+  const handleExerciseSearch = async (exercise) => {
+    setFormData(prev => ({ ...prev, exerciseNama: text}));
+    
+    if (!text || text.length < 2) {
+      setExerciseSugesstion([]);
+      setShowSugesstion(false);
+      return;
+    }
+    
+    try {
+      const response = await api.get(`/exercise/search?query=${text}`);
+      setExerciseSugesstion(response.data.data);
+      setShowSugesstion(true);
+    } catch (err) {
+      console.log("Gagal mencari saran olahraga", err);
+    }
+  }
+  
+  const selectSugesstionExercise = (food) => {
+    setFormData(prev => ({
+      ...prev,
+      exerciseNama: exercise.nama,
+    }));
+    setExerciseSugesstion([]);
+    setShowSugesstion(false);
+  };
+
   // 2. POST DATA (Submit Form)
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -106,13 +164,17 @@ const Notebook = () => {
         await api.post('/log/food', {
           foodNama: formData.foodNama,
           mealType: formData.mealType,
-          porsi: parseFloat(formData.porsi)
+          porsi: parseFloat(formData.porsi),
+          tanggal: formatDateForAPI(selectedDate)
         });
       } else {
         // Kirim data Olahraga
         await api.post('/log/exercise', {
+          userId: localStorage.getItem("userId"),
           exerciseId: formData.exerciseId,
-          durationInMinute: parseInt(formData.durationInMinute)
+          exerciseNama: formData.exerciseNama,
+          durationInMinute: parseInt(formData.durationInMinute),
+          tanggal: formatDateForAPI(selectedDate)
         });
       }
 
@@ -125,7 +187,8 @@ const Notebook = () => {
         foodNama: '', 
         mealType: 'MAKAN_SIANG',
         porsi: 1,
-        exerciseId: '', 
+        exerciseId: '',
+        exerciseNama: 'Basket', 
         durationInMinute: 30
       });
       
@@ -159,19 +222,53 @@ const Notebook = () => {
     setSelectedDate(newDate);
   };
 
+  // const handleInputChange = (e) => {
+  //   setFormData({ ...formData, [e.target.name]: e.target.value });
+  // };
+
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value
+    }));
   };
 
   // Effect: Load data saat tanggal berubah
   useEffect(() => {
-    fetchDailyLogs();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setLogs({
+      foodLogs: [],
+      exerciseLogs: [],
+      summary: { totalCaloriesIn: 0, totalCaloriesOut:0 }
+    })
+    fetchDailyLogs(selectedDate);
   }, [selectedDate]);
+
+  // --- HITUNG MANUAL (FRONTEND CALCULATION) ---
+  // Kita hitung sendiri karena summary dari backend nilainya 0
+  const calculatedSummary = () => {
+    // Hitung Kalori Masuk
+    const totalIn = logs.foodLogs.reduce((total, log) => {
+      const kalori = log.food?.kalori || 0;
+      const porsi = log.porsi || 0;
+      return total + (kalori * porsi);
+    }, 0);
+
+    // Hitung Kalori Terbakar
+    const totalOut = logs.exerciseLogs.reduce((total, log) => {
+      const kaloriPerMenit = log.exercise?.kaloriTerbakarPerMenit || 0;
+      const durasi = log.durationInMinute || 0;
+      return total + (kaloriPerMenit * durasi);
+    }, 0);
+
+    return { totalIn, totalOut };
+  };
+
+  const { totalIn, totalOut } = calculatedSummary();
 
   // --- RENDER ---
   return (
-    <div className="min-h-screen bg-[#F3F4F6] p-4 md:p-8 font-sans text-gray-800">
+    <div className="min-h-screen bg-[#F3F4F6] p-4 md:p-8 pt-32 font-sans text-gray-800">
       <div className="max-w-4xl mx-auto space-y-6">
         
         {/* Header Notebook */}
@@ -203,21 +300,24 @@ const Notebook = () => {
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-wider text-gray-400 font-bold">Masuk</p>
             <p className="text-2xl font-bold text-green-600">
-              {logs.summary?.totalCaloriesIn || 0}
+              {/* {logs.summary?.totalCaloriesIn || 0} */}
+              {totalIn}
             </p>
           </div>
           
           <div className="space-y-1 border-x border-gray-100">
             <p className="text-xs uppercase tracking-wider text-gray-400 font-bold">Netto</p>
             <p className="text-3xl font-extrabold text-gray-800">
-              {(logs.summary?.totalCaloriesIn || 0) - (logs.summary?.totalCaloriesOut || 0)}
+              {/* {(logs.summary?.totalCaloriesIn || 0) - (logs.summary?.totalCaloriesOut || 0)} */}
+              {totalIn - totalOut}
             </p>
           </div>
 
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-wider text-gray-400 font-bold">Terbakar</p>
             <p className="text-2xl font-bold text-orange-500">
-              {logs.summary?.totalCaloriesOut || 0}
+              {/* {logs.summary?.totalCaloriesOut || 0} */}
+              {totalOut}
             </p>
           </div>
         </div>
@@ -259,7 +359,7 @@ const Notebook = () => {
                   {logs.foodLogs.map((log) => (
                     <div key={log.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex justify-between items-center">
                       <div>
-                        <p className="font-bold text-gray-800">{log.food?.name || 'Unknown Food'}</p>
+                        <p className="font-bold text-gray-800">{log.food?.nama || 'Unknown Food'}</p>
                         <div className="flex gap-2 mt-1">
                             <span className="text-[10px] uppercase font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
                                 {log.mealType}
@@ -351,18 +451,34 @@ const Notebook = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {logType === 'food' ? (
                 <>
-                  <div>
+                  <div className='relative'>
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nama Makanan</label>
                     <input 
                       type="text" 
                       name="foodNama"
                       value={formData.foodNama}
-                      onChange={handleInputChange}
+                      onChange={(e) => handleFoodSearch(e.target.value)}
+                      onBlur={() => setTimeout(() => setShowSugesstion(false), 200)}
                       placeholder="Cth: Bakso"
                       className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:bg-white outline-none transition-all"
                       required
+                      autoComplete='off'
                     />
-                    <p className="text-[10px] text-gray-400 mt-1">*Nama harus sesuai tabel Database (Food)</p>
+                    {showSuggestion && foodSugestion.length > 0 && (
+                      <div className="absolute z-10 w-full bg-white border-border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
+                        {foodSugestion.map((food) => (
+                          <div 
+                            key={food.id}
+                            onClick={() => selectSugesstionFood(food)}
+                            className="p-3 hover:bg-green-500 cursor-pointer border-b border-gray-50 last:border-0"
+                          >
+                            <p className="font-bold text-sm text-gray-500">{food.nama}</p>
+                            <p className="text-xs text-gray-400">{food.kalori} kkal / porsi</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-[10px] text-gray-400 mt-1">Ketik untuk mencari saran nama makanan</p>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Waktu Makan</label>
@@ -396,33 +512,49 @@ const Notebook = () => {
                   </div>
                 </>
               ) : (
-                <>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">ID Olahraga</label>
-                    <input 
-                      type="number" 
-                      name="exerciseId"
-                      value={formData.exerciseId}
-                      onChange={handleInputChange}
-                      placeholder="Cth: 1"
-                      className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
-                      required
-                    />
-                    <p className="text-[10px] text-gray-400 mt-1">*ID harus sesuai tabel Database (Exercise)</p>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Durasi (Menit)</label>
-                    <input 
-                      type="number" 
-                      name="durationInMinute"
-                      min="1"
-                      value={formData.durationInMinute}
-                      onChange={handleInputChange}
-                      className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
-                      required
-                    />
-                  </div>
-                </>
+                  <>
+                    <div className="relative">
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">ID/Nama Olahraga</label>
+                      <input 
+                        type="text" 
+                        name="exerciseNama"
+                        value={formData.exerciseNama || ""}
+                        onChange={(e) => handleExerciseSearch(e.target.value)}
+                        onBlur={() => setTimeout(() => setShowSugesstion(false), 200)} 
+                        placeholder="Cth: Bakso"
+                        className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
+                        required
+                        autoComplete='off'
+                      />
+                      {showSuggestion && exerciseSugesstion.length > 0 && (
+                        <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
+                              {exerciseSugesstion.map((food) => (
+                                  <div 
+                                      key={exercise.id}
+                                      onClick={() => selectSugesstionExercise(exercise)}
+                                      className="p-3 hover:bg-green-50 cursor-pointer border-b border-gray-50 last:border-0"
+                                  >
+                                      <p className="font-bold text-sm text-gray-700">{food.nama}</p>
+                                      <p className="text-xs text-gray-400">{food.kalori} kkal / porsi</p>
+                                  </div>
+                              ))}
+                          </div>
+                      )}
+                      <p className="text-[10px] text-gray-400 mt-1">*ID harus sesuai tabel Database (Exercise)</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Durasi (Menit)</label>
+                      <input 
+                        type="number" 
+                        name="durationInMinute"
+                        min="1"
+                        value={formData.durationInMinute || ""}
+                        onChange={handleInputChange}
+                        className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
+                        required
+                      />
+                    </div>
+                  </>
               )}
 
               <button 

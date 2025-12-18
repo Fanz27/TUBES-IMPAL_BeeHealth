@@ -72,7 +72,7 @@ const Rekomendasi = () => {
   const { summary, recommendations } = data;
 
   return (
-    <div className="max-w-4xl mx-auto mt-6 p-4 font-sans">
+    <div className="max-w-4xl mx-auto mt-6 p-4 pt-24 font-sans">
       {/* Header */}
       <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2">
         <Activity className="text-green-600" />

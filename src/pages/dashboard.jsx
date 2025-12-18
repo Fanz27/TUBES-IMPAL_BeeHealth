@@ -1,8 +1,8 @@
-import DashboardLayout from "../components/Layouts/DashboardLayout"
+import MainDashboard from "../components/Fragments/MainDashboard"
 
 const DashboardPage = (props) => {
     return (
-        <DashboardLayout/>
+        <MainDashboard/>
     )
 }
 

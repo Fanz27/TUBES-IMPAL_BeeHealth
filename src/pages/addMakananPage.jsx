@@ -4,7 +4,6 @@ import AddMakanan from "../components/Fragments/addMakanan";
 const PageAddMakanan = () => {
     return (
         <>
-            <Navbar></Navbar>
             <AddMakanan/>
         </>
     )
