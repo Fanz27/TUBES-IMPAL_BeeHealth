@@ -1,10 +1,8 @@
 import axios from "axios";
 import { useState } from "react";
-// import { API_URL } from "../../api";
+import { API_URL } from "../../../api";
 import Button from "../Elements/Button/Index";
 import ResultsDisplay from "./ResultsDisplay";
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 const CalorieCalculate = () => { 
     const [formData, setFormData] = useState({

@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Search, Plus, Edit2, Trash2, X, Save } from 'lucide-react';
-// import api, { API_URL } from "../../api";
+import axios from 'axios';
 
-const api = import.meta.env.VITE_API_URL;
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    'ngrok-skip-browser-warning': 'true', // Penting untuk ngrok
+    'Content-Type': 'application/json'
+  }
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("AuthToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+const baseUrl = import.meta.env.VITE_API_URL;
 
 const AddOlahraga = () => {
     // State untuk menampung list olahraga
@@ -125,8 +141,8 @@ const AddOlahraga = () => {
             }
 
             const url = editOlahraga
-                ? `${API_URL}/exercise/${currentOlahraga.id}`
-                : `${API_URL}/exercise`;
+                ? `${baseUrl}/exercise/${currentOlahraga.id}`
+                : `${baseUrl}/exercise`;
             
             const method = editOlahraga ? 'PUT' : 'POST';
 
