@@ -81,6 +81,7 @@ const Notebook = () => {
     try {
       const dateString = formatDateForAPI(selectedDate);
       const response = await api.get('/log/daily', { params: { date: dateString } });
+      console.log("response data daily logs:", response.data);
 
       const safeSummary = response.data.summary || { totalCaloriesIn: 0, totalCaloriesOut: 0 };
       
@@ -92,13 +93,11 @@ const Notebook = () => {
       setError(null);
     } catch (err) {
       console.error("DEBUG Fetch Error:", err);
-      // Menampilkan pesan error yang lebih ramah
       const msg = err.response?.data?.message || "Gagal memuat data notebook. Pastikan server berjalan.";
       setError(msg);
 
       if (err.response?.status === 401) {
           alert("Sesi kamu habis. Silakan login ulang.");
-          // window.location.href = '/login'; 
       }
     } finally {
       setLoading(false);
@@ -143,7 +142,7 @@ const Notebook = () => {
     
     try {
       const response = await api.get(`/exercise/search?query=${text}`);
-      setExerciseSugesstion(response.data.data);
+      setExerciseSugesstion(response.data.namaKegiatan);
       setShowSugesstion(true);
     } catch (err) {
       console.log("Gagal mencari saran olahraga", err);
@@ -154,6 +153,7 @@ const Notebook = () => {
     setFormData(prev => ({
       ...prev,
       namaKegiatan: exercise.namaKegiatan,
+      exerciseId: exerciseId,
     }));
     setExerciseSugesstion([]);
     setShowSugesstion(false);
@@ -168,8 +168,8 @@ const Notebook = () => {
         alert("Mohon isi Nama Makanan!");
         return;
     }
-    if (logType === 'exercise' && !formData.exerciseId) {
-        alert("Mohon isi ID Olahraga!");
+    if (logType === 'exercise' && !formData.namaKegiatan) {
+        alert("Mohon isi nama Olahraga!");
         return;
     }
 
@@ -189,7 +189,7 @@ const Notebook = () => {
         await api.post('/log/exercise', {
           userId: localStorage.getItem("userId"),
           exerciseId: formData.exerciseId,
-          exerciseNama: formData.exerciseNama,
+          namaKegiatan: formData.namaKegiatan,
           durationInMinute: parseInt(formData.durationInMinute),
           tanggal: formatDateForAPI(selectedDate)
         });
@@ -239,10 +239,6 @@ const Notebook = () => {
     setSelectedDate(newDate);
   };
 
-  // const handleInputChange = (e) => {
-  //   setFormData({ ...formData, [e.target.name]: e.target.value });
-  // };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
       setFormData((prev) => ({
@@ -273,8 +269,8 @@ const Notebook = () => {
 
     // Hitung Kalori Terbakar
     const totalOut = logs.exerciseLogs.reduce((total, log) => {
-      const kaloriPerMenit = log.exercise?.kaloriTerbakarPerMenit || 0;
-      const durasi = log.durationInMinute || 0;
+      const kaloriPerMenit = log.exercise?.caloriesBurnPerMinute || 0;
+      const durasi = log.durationInMinutes || 0;
       return total + (kaloriPerMenit * durasi);
     }, 0);
 
@@ -411,13 +407,20 @@ const Notebook = () => {
                   {logs.exerciseLogs.map((log) => (
                     <div key={log.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex justify-between items-center">
                       <div>
-                        <p className="font-bold text-gray-800">{log.exercise?.name || 'Unknown Exercise'}</p>
+                        {/* Cek nama dari berbagai kemungkinan properti */}
+                        <p className="font-bold text-gray-800">
+                          {log.exercise?.namaKegiatan ||  'Unknown Exercise'}
+                        </p>
+                        
                         <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                          ⏱ {log.durationInMinute} menit
+                          ⏱ {log.durationInMinutes} menit
                         </p>
                       </div>
+                      
                       <div className="text-orange-500 font-bold bg-orange-50 px-3 py-1 rounded-lg text-sm">
-                        -{log.exercise ? (log.exercise.kaloriTerbakarPerMenit * log.durationInMinute) : 0}
+                        - {Math.round(
+                            (log.exercise?.kaloriTerbakarPerMenit || log.exercise?.caloriesBurnPerMinute || 0) * log.durationInMinutes
+                          )} kkal
                       </div>
                     </div>
                   ))}
@@ -531,33 +534,39 @@ const Notebook = () => {
               ) : (
                   <>
                     <div className="relative">
-                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">ID/Nama Olahraga</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nama Olahraga</label>
                       <input 
                         type="text" 
                         name="exerciseNama"
-                        value={formData.exerciseNama || ""}
+                        value={formData.namaKegiatan || ""}
                         onChange={(e) => handleExerciseSearch(e.target.value)}
                         onBlur={() => setTimeout(() => setShowSugesstion(false), 200)} 
-                        placeholder="Cth: Bakso"
+                        placeholder="Cth: Basket"
                         className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
                         required
                         autoComplete='off'
                       />
+                      {/* Di dalam input exerciseNama, bagian showSuggestion */}
                       {showSuggestion && exerciseSugesstion.length > 0 && (
                         <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
-                              {exerciseSugesstion.map((food) => (
-                                  <div 
-                                      key={exercise.id}
-                                      onClick={() => selectSugesstionExercise(exercise)}
-                                      className="p-3 hover:bg-green-50 cursor-pointer border-b border-gray-50 last:border-0"
-                                  >
-                                      <p className="font-bold text-sm text-gray-700">{food.nama}</p>
-                                      <p className="text-xs text-gray-400">{food.kalori} kkal / porsi</p>
-                                  </div>
-                              ))}
-                          </div>
+                            {/* Ubah parameter (food) jadi (exercise) agar tidak bingung */}
+                            {exerciseSugesstion.map((exercise) => ( 
+                                <div 
+                                    key={exercise.id}
+                                    onClick={() => selectSugesstionExercise(exercise)}
+                                    className="p-3 hover:bg-green-50 cursor-pointer border-b border-gray-50 last:border-0"
+                                >
+                                    {/* Gunakan properti exercise yang benar */}
+                                    <p className="font-bold text-sm text-gray-700">{exercise.namaKegiatan || exercise.name}</p>
+                                    {/* Ganti food.kalori dengan properti kalori olahraga */}
+                                    <p className="text-xs text-gray-400">
+                                        {exercise.caloriesBurnPerMinute || exercise.kaloriTerbakarPerMenit} kkal / menit
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
                       )}
-                      <p className="text-[10px] text-gray-400 mt-1">*ID harus sesuai tabel Database (Exercise)</p>
+                      <p className="text-[10px] text-gray-400 mt-1">Ketuk untuk mencari saran nama olahraga</p>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Durasi (Menit)</label>
