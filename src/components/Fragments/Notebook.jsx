@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -11,7 +12,23 @@ import {
   Loader2 // Icon loading tambahan
 } from 'lucide-react';
 
-import api from '../../api'; // Pastikan path ini sesuai dengan struktur foldermu
+// const api = import.meta.env.VITE_API_URL;
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    'ngrok-skip-browser-warning': 'true', // Penting untuk ngrok
+    'Content-Type': 'application/json'
+  }
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("AuthToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const Notebook = () => {
   // --- STATE ---

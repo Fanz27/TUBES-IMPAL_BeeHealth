@@ -1,6 +1,23 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Flame, Heart, MessageCircle, ChevronDown, Plus, Utensils, Flag, X, Image as ImageIcon, Trash2 } from 'lucide-react';
-import api, { API_URL } from '../../api'; 
+import axios from 'axios';
+// import api, { API_URL } from '../../api'; 
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    'ngrok-skip-browser-warning': 'true', // Penting untuk ngrok
+    'Content-Type': 'application/json'
+  }
+});
+
+// 3. Tambahkan interceptor untuk Token (jika pakai login)
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("AuthToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const Timeline = ({selectedDate = new Date()}) => {
     // --- STATE ---
@@ -58,7 +75,7 @@ const Timeline = ({selectedDate = new Date()}) => {
     useEffect(() => {
         fetchPosts();
 
-        fetchUserStats();
+        // fetchUserStats();
         
         const nama = localStorage.getItem("nama");
         const idPengguna = localStorage.getItem("userId");
@@ -69,26 +86,26 @@ const Timeline = ({selectedDate = new Date()}) => {
         if (role) setRoleId(role);
     }, []);
 
-    const fetchUserStats = async () => {
-        try {
-            const userId = localStorage.getItem("userId");
-            if (!userId) return;
+    // const fetchUserStats = async () => {
+    //     try {
+    //         const userId = localStorage.getItem("userId");
+    //         if (!userId) return;
 
-            const res = await api.get(`/user/stats`);
+    //         const res = await api.get(`/user/stats`);
 
-            if (res.data?.data) {
-                setUserData(prev => ({
-                    ...prev,
-                    streakCount: res.data.data.streak || 0,
-                    username: res.data.data.nama || prev.username,
-                    calories: res.data.data.totalCaloriesToday ||  0,
-                    target: res.data.data.totalCalories || prev.target
-                }));
-            }
-        } catch (err) {
-            console.log("Gagal mengambil data user stats", err);
-        }
-    }
+    //         if (res.data?.data) {
+    //             setUserData(prev => ({
+    //                 ...prev,
+    //                 streakCount: res.data.data.streak || 0,
+    //                 username: res.data.data.nama || prev.username,
+    //                 calories: res.data.data.totalCaloriesToday ||  0,
+    //                 target: res.data.data.totalCalories || prev.target
+    //             }));
+    //         }
+    //     } catch (err) {
+    //         console.log("Gagal mengambil data user stats", err);
+    //     }
+    // }
 
     // --- FETCH MEALS ---
     const fetchMeals = async (dateInput) => {
@@ -96,34 +113,42 @@ const Timeline = ({selectedDate = new Date()}) => {
         try {
             // const today = new Date().toISOString().split('T')[0];
             const formattedDate = targetDate.toISOString().split('T')[0];
-            console.log("Fetching date:", formattedDate);
-            const res = await api.get('/log/food',{
+            const res = await api.get('/log/daily',{
                 params: {date: formattedDate}
             });
-            console.log("Raw Data dari Backend:", res.data?.data);
-            const grouped = { MAKAN_PAGI: [], MAKAN_SIANG: [], MAKAN_MALAM: [], KUDAPAN: [] };
+            const grouped = { SARAPAN: [], MAKAN_SIANG: [], MAKAN_MALAM: [], KUDAPAN: [] };
 
             let totalCalories = 0;
 
-            if(res.data?.data) {
-                res.data.data.forEach(item => {
-                    const calorie = item.food ? item.food.kalori * item.porsi : 0;
+            const logData = res.data?.foodLogs || [];
+
+            if (logData.length > 0) {
+                logData.forEach(item => {
+                    // Hitung kalori (Handle jika food null)
+                    const calorie = item.food ? (item.food.kalori * item.porsi) : 0;
                     const foodNama = item.food ? item.food.nama : "Unknown";
 
                     const cleanItem = {
                         ...item,
-                        foodNama: foodNama,
+                        foodName: foodNama,
                         calories: calorie
                     };
 
+                    // Masukkan ke kategori yang sesuai
                     if (grouped[item.mealType]) {
                         grouped[item.mealType].push(cleanItem);
+                    } else {
+                        // Jaga-jaga kalau backend kirim "SARAPAN" tapi state kita "MAKAN_PAGI"
+                        if(item.mealType === 'SARAPAN') {
+                             grouped['MAKAN_PAGI'].push(cleanItem);
+                        }
                     }
+                    
                     totalCalories += calorie;
                 });
-                setMeals(grouped);
-                setUserData(prev => ({ ...prev, calories: totalCalories, consumed: totalCalories}));
             }
+            setMeals(grouped);
+            setUserData(prev => ({ ...prev, calories: totalCalories, consumed: totalCalories}));
         } catch (err) {
             console.log("Gagal mengambil data makanan", err);
         }
@@ -141,10 +166,7 @@ const Timeline = ({selectedDate = new Date()}) => {
         try {
             setLoading(true);
             const response = await api.get('/post/'); 
-            
-            // 1. Ambil Base URL Server secara dinamis dari API_URL
-            // Hapus '/api' di belakang URL jika ada
-            const baseURL = (API_URL || 'http://localhost:3000').replace(/\/api\/?$/, '');
+            const baseURL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/api\/?$/, '');
 
             // 2. Cek Validitas Data
             const rawData = response.data.data || response.data;

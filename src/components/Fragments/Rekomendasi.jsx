@@ -1,6 +1,24 @@
 import React, { useEffect, useState } from "react";
-import api from "../../api";
+import axios from "axios";
+// import api from "../../api";
 import { Utensils, Dumbbell, Activity, AlertCircle, CheckCircle } from "lucide-react";
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    'ngrok-skip-browser-warning': 'true', // Penting untuk ngrok
+    'Content-Type': 'application/json'
+  }
+});
+
+// 3. Tambahkan interceptor untuk Token (jika pakai login)
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("AuthToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const Rekomendasi = () => {
   const [data, setData] = useState(null);
