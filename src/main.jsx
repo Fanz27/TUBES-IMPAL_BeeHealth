@@ -13,7 +13,7 @@ import PageAddMakanan from './pages/addMakananPage.jsx'
 import RekomendasiPage from './pages/RekomendasiPage.jsx'
 import AboutPage from './pages/AboutPage.jsx'
 import NotebookPage from './pages/notebookPage.jsx'
-import TimelinePage from './pages/timelinePage.jsx'
+import TimelinePage from './pages/TempTimelinePage.jsx'
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 
 // Import Layout & Protected Route
