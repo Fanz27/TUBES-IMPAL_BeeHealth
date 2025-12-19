@@ -1,4 +1,4 @@
-import InputForm from "../Elements/Input/Index"
+import InputForm from "../Elements/Input/Index.jsx"
 import Button from "../Elements/Button/Index.jsx"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
