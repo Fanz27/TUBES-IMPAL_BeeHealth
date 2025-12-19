@@ -1,0 +1,108 @@
+import InputForm from "../Elements/Input/Index";
+import Button from "../Elements/Button/Index.jsx";
+import { useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+
+const API_URL = import.meta.env.VITE_API_URL;
+const FormResetPassword = () => {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+  const navigate = useNavigate();
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setMessage("");
+
+    if (!password || !confirmPassword) {
+      setMessage("Semua field harus diisi.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setMessage("Password minimal 8 karakter.");
+      return;
+    }
+
+    if (!/^[A-Z]/.test(password)) {
+      setMessage("Password harus diawali huruf kapital.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setMessage("Konfirmasi password tidak sama.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/auth/reset-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Password berhasil direset. Silakan login.");
+        navigate("/login");
+      } else {
+        setMessage(data.message || "Reset password gagal.");
+      }
+    } catch (error) {
+      console.error(error);
+      setMessage("Terjadi kesalahan pada server.");
+    }
+  };
+
+  return (
+    <form onSubmit={handleResetPassword}>
+      <div className="relative">
+        <InputForm
+          label="Password Baru"
+          type={showPassword ? "text" : "password"}
+          placeholder="Minimal 8 karakter"
+          nama="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+
+      <div className="relative">
+        <InputForm
+          label="Konfirmasi Password"
+          type={showPassword ? "text" : "password"}
+          placeholder="Ulangi password"
+          nama="confirmPassword"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-4 top-9.5"
+        >
+          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      </div>
+
+      <Button className="w-full mt-3" type="submit">
+        Reset Password
+      </Button>
+
+      {message && <p className="text-red-500 mt-2">{message}</p>}
+    </form>
+  );
+};
+
+export default FormResetPassword;

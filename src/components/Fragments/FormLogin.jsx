@@ -1,9 +1,10 @@
 import InputForm from "../Elements/Input/Index";
 import Button from "../Elements/Button/Index.jsx";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { API_URL }  from "../../api.jsx";
+import { useNavigate, Link } from "react-router-dom";
 import { EyeOff, Eye } from "lucide-react";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const FormLogin = () => {
   const [username, setUsername] = useState("");
@@ -137,6 +138,14 @@ const FormLogin = () => {
         {showPassword ? <EyeOff size={18}/> : <Eye size={18}/> }
       </button>
     </div>
+    <div className="text-right mt-2">
+      <Link
+        to="/forgot-password"
+        className="text-sm text-blue-600 hover:underline"
+      >
+        Lupa password?
+      </Link>
+  </div>
       <Button className="w-full" type="submit" variant="default">
         Login
       </Button>

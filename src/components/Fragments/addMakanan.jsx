@@ -1,7 +1,9 @@
 import React, { useState, useEffect, use } from "react";
 import { Search, Plus, Edit2, Trash2, X, Save } from 'lucide-react';
 import axios from "axios";
-import api, { API_URL } from "../../api";
+// import api, { API_URL } from "../../api";
+
+const api = import.meta.env.VITE_API_URL;
 
 const AddMakanan = () => {
     const [FoodName, setFoodName] = useState([]);

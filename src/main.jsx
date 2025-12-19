@@ -14,11 +14,14 @@ import RekomendasiPage from './pages/RekomendasiPage.jsx'
 import AboutPage from './pages/AboutPage.jsx'
 import NotebookPage from './pages/notebookPage.jsx'
 import TimelinePage from './pages/timelinePage.jsx'
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 
 // Import Layout & Protected Route
 import ProtectedRoute from './components/Fragments/ProtectedRoute.jsx'
 import MainLayout from './components/Layouts/MainLayouts.jsx' // <--- IMPORT INI
 import PageAddOlahraga from './pages/addOlahragaPage.jsx'
+import FormForgotPassword from './components/Fragments/ForgotPassword.jsx'
+import FormResetPassword from './components/Fragments/ResetPassword.jsx'
 
 const router = createBrowserRouter([
   // --- PUBLIC ROUTES (Tanpa Navbar) ---
@@ -29,6 +32,8 @@ const router = createBrowserRouter([
   },
   { path: "/login", element: <LoginPage/> },
   { path: "/register", element: <RegisterPage/> },
+  {path: "/forgot-password", element: <FormForgotPassword/>},
+  {path: "/reset-password", element: <FormResetPassword/>},
 
   // --- APP ROUTES (Pakai MainLayout: Ada Navbar, Footer & Padding Otomatis) ---
   {
@@ -69,6 +74,10 @@ const router = createBrowserRouter([
       {
         path: "/Timeline",
         element: <TimelinePage/>
+      },
+      {
+        path: "/forgot-password",
+        element: <ResetPasswordPage/>
       }
     ]
   }
