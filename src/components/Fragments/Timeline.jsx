@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Flame, Heart, MessageCircle, ChevronDown, Plus, Utensils, Flag, X, Image as ImageIcon, Trash2 } from 'lucide-react';
 import axios from 'axios';
-// import api, { API_URL } from '../../api'; 
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: {
@@ -19,13 +19,13 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-const Timeline = ({selectedDate = new Date()}) => {
+const Timeline = ({selectedDate}) => {
     // --- STATE ---
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentUserId, setCurrentUserId] = useState();
     const [roleId, setRoleId] = useState();
-    // const [selectedDate, setSelectedDate] = useState(new Date());
+    const [dateToUse, setDateToUse] = useState(new Date());
 
     
     // State Modal & Form
@@ -44,7 +44,7 @@ const Timeline = ({selectedDate = new Date()}) => {
     const fileInputRef = useRef(null);
 
     const [userData, setUserData] = useState({
-        streakCount: 5, 
+        streakCount: 0, 
         username: 'Arif',
         userImage: 'https://i.pravatar.cc/150?img=12',
         calories: 0,
@@ -75,7 +75,7 @@ const Timeline = ({selectedDate = new Date()}) => {
     useEffect(() => {
         fetchPosts();
 
-        // fetchUserStats();
+        fetchUserStats();
         
         const nama = localStorage.getItem("nama");
         const idPengguna = localStorage.getItem("userId");
@@ -86,26 +86,21 @@ const Timeline = ({selectedDate = new Date()}) => {
         if (role) setRoleId(role);
     }, []);
 
-    // const fetchUserStats = async () => {
-    //     try {
-    //         const userId = localStorage.getItem("userId");
-    //         if (!userId) return;
-
-    //         const res = await api.get(`/user/stats`);
-
-    //         if (res.data?.data) {
-    //             setUserData(prev => ({
-    //                 ...prev,
-    //                 streakCount: res.data.data.streak || 0,
-    //                 username: res.data.data.nama || prev.username,
-    //                 calories: res.data.data.totalCaloriesToday ||  0,
-    //                 target: res.data.data.totalCalories || prev.target
-    //             }));
-    //         }
-    //     } catch (err) {
-    //         console.log("Gagal mengambil data user stats", err);
-    //     }
-    // }
+    // Di dalam Timeline.jsx
+    const fetchUserStats = async () => {
+        try {
+            const res = await api.get('/user/stats');
+            if (res.data) {
+                setUserData(prev => ({
+                    ...prev,
+                    streakCount: res.data.streak,
+                    isStreakActive: res.data.isStreakActive // Simpan status aktif/mati
+                }));
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
 
     // --- FETCH MEALS ---
     const fetchMeals = async (dateInput) => {
@@ -155,10 +150,14 @@ const Timeline = ({selectedDate = new Date()}) => {
     };
 
     useEffect(() => {
-        if (selectedDate) {          
-            fetchMeals(selectedDate);
-        };
-    }, [selectedDate]);
+        if (selectedDate) {
+            setDateToUse(selectedDate);
+        }
+    }, [selectedDate])
+
+    useEffect(() => {
+            fetchMeals(dateToUse);
+    }, [dateToUse.toISOString().split('T')[0]]);
 
 
     // --- FETCH POSTS (PERBAIKAN UTAMA DISINI) ---
@@ -336,13 +335,23 @@ const Timeline = ({selectedDate = new Date()}) => {
                     <div className='lg:col-span-3 space-y-6'>
                         {/* Streak Card */}
                         <div className='bg-white rounded-2xl shadow-sm p-6 border border-gray-100 text-center'>
-                            <Flame size={40} className="text-orange-500 mx-auto mb-2"/>
-                            <h3 className="font-bold">Streak: {userData.streakCount}</h3>
+                            <Flame 
+                                size={40} 
+                                className={`mx-auto mb-2 ${userData.isStreakActive ? 'text-orange-500 fill-orange-500' : 'text-gray-400'}`}
+                            />
+                            
+                            <h3 className={`font-bold ${userData.isStreakActive ? 'text-black' : 'text-gray-500'}`}>
+                                Streak: {userData.streakCount} Hari
+                            </h3>
+
+                            {!userData.isStreakActive && (
+                                <p className="text-l text-red-500 mt-1 font-bold">Streak mati! Mulai lagi yuk.</p>
+                            )}
                         </div>
                         
                         {/* Meals List */}
                         <div className='bg-white rounded-2xl shadow-sm p-5 border border-gray-100'>
-                            <h3 className="text-sm font-bold text-gray-600 mb-4 text-center"> {formatDate(selectedDate)}</h3>
+                            <h3 className="text-sm font-bold text-gray-600 mb-4 text-center"> {formatDate(dateToUse)}</h3>
                             <div className="space-y-4">
                                 {Object.entries(meals).map(([mealType, items]) => (
                                     <div key={mealType} className="border-b pb-2">
