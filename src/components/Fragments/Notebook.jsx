@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api  from "../../../api";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -11,24 +11,6 @@ import {
   BookOpen,
   Loader2 // Icon loading tambahan
 } from 'lucide-react';
-
-// const api = import.meta.env.VITE_API_URL;
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    'ngrok-skip-browser-warning': 'true', // Penting untuk ngrok
-    'Content-Type': 'application/json'
-  }
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("AuthToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 const Notebook = () => {
   // --- STATE ---
@@ -134,15 +116,15 @@ const Notebook = () => {
   const handleExerciseSearch = async (text) => {
     setFormData(prev => ({ ...prev, namaKegiatan: text}));
     
-    if (!text || text.length < 2) {
+    if (!text || text.length < 1) {
       setExerciseSugesstion([]);
       setShowSugesstion(false);
       return;
     }
     
     try {
-      const response = await api.get(`/exercise/search?query=${text}`);
-      setExerciseSugesstion(response.data.namaKegiatan);
+      const response = await api.get(`/exercise`);
+      setExerciseSugesstion(response.data.data);
       setShowSugesstion(true);
     } catch (err) {
       console.log("Gagal mencari saran olahraga", err);
@@ -153,7 +135,7 @@ const Notebook = () => {
     setFormData(prev => ({
       ...prev,
       namaKegiatan: exercise.namaKegiatan,
-      exerciseId: exerciseId,
+      exerciseId: exercise.exerciseId || exercise.id,
     }));
     setExerciseSugesstion([]);
     setShowSugesstion(false);
@@ -549,18 +531,15 @@ const Notebook = () => {
                       {/* Di dalam input exerciseNama, bagian showSuggestion */}
                       {showSuggestion && exerciseSugesstion.length > 0 && (
                         <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
-                            {/* Ubah parameter (food) jadi (exercise) agar tidak bingung */}
                             {exerciseSugesstion.map((exercise) => ( 
                                 <div 
                                     key={exercise.id}
                                     onClick={() => selectSugesstionExercise(exercise)}
                                     className="p-3 hover:bg-green-50 cursor-pointer border-b border-gray-50 last:border-0"
                                 >
-                                    {/* Gunakan properti exercise yang benar */}
-                                    <p className="font-bold text-sm text-gray-700">{exercise.namaKegiatan || exercise.name}</p>
-                                    {/* Ganti food.kalori dengan properti kalori olahraga */}
+                                    <p className="font-bold text-sm text-gray-700">{exercise.namaKegiatan}</p>
                                     <p className="text-xs text-gray-400">
-                                        {exercise.caloriesBurnPerMinute || exercise.kaloriTerbakarPerMenit} kkal / menit
+                                        {exercise.caloriesBurnPerMinute} kkal / menit
                                     </p>
                                 </div>
                             ))}

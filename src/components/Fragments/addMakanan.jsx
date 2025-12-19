@@ -1,9 +1,22 @@
 import React, { useState, useEffect, use } from "react";
 import { Search, Plus, Edit2, Trash2, X, Save } from 'lucide-react';
 import axios from "axios";
-// import api, { API_URL } from "../../api";
 
-const api = import.meta.env.VITE_API_URL;
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    'ngrok-skip-browser-warning': 'true', // Penting untuk ngrok
+    'Content-Type': 'application/json'
+  }
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("AuthToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const AddMakanan = () => {
     const [FoodName, setFoodName] = useState([]);
@@ -129,9 +142,10 @@ const AddMakanan = () => {
             }
             console.log('Submitting data:', currentMakanan);
 
+            const baseUrl = import.meta.env.VITE_API_URL;
             const url = editMakanan
-                ? `${API_URL}/food/${currentMakanan.id}`
-                : `${API_URL}/food`;
+                ? `${baseUrl}/food/${currentMakanan.id}`
+                : `${baseUrl}/food`;
             const method = editMakanan ? 'PUT' : 'POST';
 
             const response = await fetch(url, {

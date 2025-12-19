@@ -1,23 +1,8 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-// Import icon tambahan: Sparkles (untuk AI) dan Bot
+import api  from "../../../api";
 import { Utensils, Dumbbell, Activity, AlertCircle, CheckCircle, Sparkles, Bot } from "lucide-react";
 // import ReactMarkdown from 'react-markdown'; // Opsional: Install 'npm install react-markdown' jika gemini kirim format list
 
-// ... (Kode setup axios api kamu tetap sama) ...
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    'ngrok-skip-browser-warning': 'true',
-    'Content-Type': 'application/json'
-  }
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("AuthToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
 
 const Rekomendasi = () => {
   const [data, setData] = useState(null);

@@ -3,8 +3,7 @@ import Button from "../Elements/Button/Index.jsx"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { EyeOff, Eye } from "lucide-react";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import {API_URL}  from "../../../api";
 
 const FormRegister = () => {
     const [nama, setNama] = useState("");

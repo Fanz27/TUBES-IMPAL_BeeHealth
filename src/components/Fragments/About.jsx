@@ -4,23 +4,6 @@ import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 
 const About = () => {
-
-    // const locationRoute = useLocation();
-
-    // useEffect(() => {
-    //     // Cek apakah ada hash di URL
-    //     if (locationRoute.hash) {
-    //     const element = document.querySelector(location.hash);
-    //     if (element) {
-    //         // Smooth scroll ke element
-    //         element.scrollIntoView({ 
-    //         behavior: 'smooth',
-    //         block: 'start'
-    //         });
-    //     }
-    //     }
-    // }, [location]);
-
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 mt-auto mb-auto">
             <h1 className="text-4xl font-bold mb-6 text-green-700">Tentang BeeHealth</h1>
