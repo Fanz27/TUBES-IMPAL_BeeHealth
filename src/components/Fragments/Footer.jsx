@@ -28,10 +28,10 @@ const Footer = () => {
                     <ul className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2 text-sm font-semibold text-gray-700">
                         <FooterLink to="/home" text="Home" />
                         <FooterLink to="/calculate" text="Calculate" />
-                        <FooterLink to="/rekomendasi" text="Rekomendasi" />
-                        <FooterLink to="/addMakanan" text="Add" />
-                        <FooterLink to="/timeline" text="Timeline" />
-                        <FooterLink to="/about" text="About" />
+                        <FooterLink to="/notebook" text="Notebook"/>
+                        <FooterLink to="/Rekomendasi" text="Recommendation" />
+                        <FooterLink to="/Timeline" text="Timeline" />
+                        <FooterLink to="/About" text="About" />
                     </ul>
                 </div>
 

@@ -28,24 +28,23 @@ const Notebook = () => {
 
   // State UI
   const [loading, setLoading] = useState(true);
-  const [submitLoading, setSubmitLoading] = useState(false); // Loading khusus tombol simpan
+  const [submitLoading, setSubmitLoading] = useState(false); 
   const [error, setError] = useState(null);
 
   // State Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [logType, setLogType] = useState('food'); // 'food' atau 'exercise'
+  const [logType, setLogType] = useState('food'); 
 
   // State Form Input
   const [formData, setFormData] = useState({
     foodNama: '', 
-    mealType: 'MAKAN_SIANG', // Default value disesuaikan (biasanya LUNCH/BREAKFAST/DINNER)
+    mealType: 'MAKAN_SIANG',
     porsi: 1,
     exerciseId: '', 
     exerciseNama: '',
     durationInMinute: 0
   });
 
-  // --- HELPER FUNCTIONS ---
   const formatDateForAPI = (date) => date.toISOString().split('T')[0];
   
   const formatDateDisplay = (date) => new Intl.DateTimeFormat('id-ID', {
@@ -55,9 +54,6 @@ const Notebook = () => {
     year: 'numeric'
   }).format(date);
 
-  // --- API CALLS ---
-  
-  // 1. GET DATA (Fetch Logs)
   const fetchDailyLogs = async () => {
     setLoading(true);
     try {

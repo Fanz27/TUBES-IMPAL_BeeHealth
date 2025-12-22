@@ -4,7 +4,7 @@ import axios from 'axios';
 import api  from "../../../api";    
 
 
-const Timeline = ({selectedDate}) => {
+const Timeline = ({selectedDate, targetUserId}) => {
     // --- STATE ---
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -30,12 +30,13 @@ const Timeline = ({selectedDate}) => {
 
     const [userData, setUserData] = useState({
         streakCount: 0, 
-        username: 'Arif',
         userImage: 'https://i.pravatar.cc/150?img=12',
         calories: 0,
         targetCalories: 2000,
         consumed: 1641,
-        target: 1412
+        target: 1412,
+        isStreakActive: false, 
+        username: ''
     });
 
     const [meals, setMeals] = useState({
@@ -69,17 +70,26 @@ const Timeline = ({selectedDate}) => {
         if (nama) setUserData(prev => ({ ...prev, username: nama }));
         if (idPengguna) setCurrentUserId(idPengguna);
         if (role) setRoleId(role);
-    }, []);
+    }, [targetUserId]);
 
     // Di dalam Timeline.jsx
     const fetchUserStats = async () => {
         try {
-            const res = await api.get('/user/stats');
+            let endpoint = '/user/stats';
+            if (targetUserId && targetUserId !== 'undefined' && targetUserId !== 'null') {
+            endpoint = `/user/stats/${targetUserId}`; // Tambahkan '/' sebelum ID
+            }
+
+            console.log("Fetching URL:", endpoint); // Cek di console browser
+
+            const res = await api.get(endpoint);
+            console.log("DATA DARI BACKEND:", res.data);
             if (res.data) {
                 setUserData(prev => ({
                     ...prev,
-                    streakCount: res.data.streak,
-                    isStreakActive: res.data.isStreakActive // Simpan status aktif/mati
+                    streakCount: res.data.streak || 0,
+                    isStreakActive: res.data.isStreakActive, // Simpan status aktif/mati
+                    username: res.data.username || prev.username
                 }));
             }
         } catch (err) {
@@ -91,8 +101,7 @@ const Timeline = ({selectedDate}) => {
     const fetchMeals = async (dateInput) => {
         const targetDate = dateInput || selectedDate || new Date();
         try {
-            // const today = new Date().toISOString().split('T')[0];
-            const formattedDate = targetDate.toISOString().split('T')[0];
+         const formattedDate = targetDate.toISOString().split('T')[0];
             const res = await api.get('/log/daily',{
                 params: {date: formattedDate}
             });
@@ -142,6 +151,7 @@ const Timeline = ({selectedDate}) => {
 
     useEffect(() => {
             fetchMeals(dateToUse);
+            fetchUserStats();
     }, [dateToUse.toISOString().split('T')[0]]);
 
 
@@ -304,6 +314,26 @@ const Timeline = ({selectedDate}) => {
 
     const toggleMeal = (type) => setExpandMeals(prev => ({...prev, [type]: !prev[type]}));
 
+    // Masukkan ini sebelum return (...)
+
+// Tentukan Warna Api
+const getStreakColor = () => {
+    if (userData.isStreakActive) return "text-orange-500 fill-orange-500 drop-shadow-md"; 
+    if (userData.streakCount > 0) return "text-gray-400 fill-gray-400"; 
+    return "text-gray-200"; 
+};
+
+// Tentukan Pesan Motivasi
+const getStreakMessage = () => {
+    if (userData.isStreakActive) {
+        return "Kamu on fire! Pertahankan! 🔥";
+    } else if (userData.streakCount > 0) {
+        return "Yuk catat makanan biar streak gak hilang! ⏳";
+    } else {
+        return "Mulai streak pertamamu hari ini! 🚀";
+    }
+};
+
     return (
         <div className="min-h-screen bg-[#F3F4F6] font-sans relative">
             <div className='max-w-7xl mx-auto px-4 py-8'>
@@ -319,20 +349,37 @@ const Timeline = ({selectedDate}) => {
                     {/* Sidebar Kiri */}
                     <div className='lg:col-span-3 space-y-6'>
                         {/* Streak Card */}
-                        <div className='bg-white rounded-2xl shadow-sm p-6 border border-gray-100 text-center'>
-                            <Flame 
-                                size={40} 
-                                className={`mx-auto mb-2 ${userData.isStreakActive ? 'text-orange-500 fill-orange-500' : 'text-gray-400'}`}
-                            />
-                            
-                            <h3 className={`font-bold ${userData.isStreakActive ? 'text-black' : 'text-gray-500'}`}>
-                                Streak: {userData.streakCount} Hari
-                            </h3>
+                    <div className='bg-white rounded-2xl shadow-sm p-6 border border-gray-100 text-center relative overflow-hidden'>
+                        
+                        {/* Background Pattern (Optional Decoration) */}
+                        <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-yellow-50 rounded-full blur-xl opacity-50"></div>
 
-                            {!userData.isStreakActive && (
-                                <p className="text-l text-red-500 mt-1 font-bold">Streak mati! Mulai lagi yuk.</p>
-                            )}
-                        </div>
+                        <div className="relative z-10">
+                            {/* Ikon Api */}
+                            <div className="flex justify-center">
+                                <Flame 
+                                    size={48} 
+                                    className={`mb-2 transition-all duration-300 ${getStreakColor()} ${(!userData.isStreakActive && userData.streakCount > 0) ? 'animate-pulse' : ''}`}
+                                />
+                            </div>
+                            
+                            {/* Angka Streak */}
+                                    <h3 className={`text-2xl font-black ${userData.isStreakActive ? 'text-gray-800' : 'text-gray-500'}`}>
+                                        {userData.streakCount} <span className="text-sm font-medium text-gray-400">Hari</span>
+                                    </h3>
+
+                                    {/* Pesan Status */}
+                                    <p className={`text-xs mt-2 font-medium px-2 py-1 rounded-full inline-block
+                                        ${userData.isStreakActive 
+                                            ? 'bg-orange-50 text-orange-600' 
+                                            : userData.streakCount > 0 
+                                                ? 'bg-yellow-50 text-yellow-600' // Warna warning
+                                                : 'bg-gray-100 text-gray-500'
+                                        }`}>
+                                        {getStreakMessage()}
+                                    </p>
+                                </div>
+                            </div>
                         
                         {/* Meals List */}
                         <div className='bg-white rounded-2xl shadow-sm p-5 border border-gray-100'>

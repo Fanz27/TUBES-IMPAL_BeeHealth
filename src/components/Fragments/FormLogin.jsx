@@ -61,7 +61,7 @@ const FormLogin = () => {
       });
 
       const data = await response.json();
-      console.log("response", data);
+      // console.log("response", data);
 
       if (response.ok) {
         if (data.token && data.userId) {
@@ -82,7 +82,7 @@ const FormLogin = () => {
         }
       } else {
         if (response.status === 401) {
-          setMessage('Email atau username salah. Silahkan coba lagi.');
+          setMessage('Email atau username atau password salah. Silahkan coba lagi.');
           return;
         } else {
           if (data.field === 'email') {

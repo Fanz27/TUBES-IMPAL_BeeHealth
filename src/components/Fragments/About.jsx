@@ -1,9 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import { HeartPulse, Leaf, Calculator } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 
 const About = () => {
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 800);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+                <span className="ml-3 text-green-700 font-semibold">Memuat About BeeHealth...</span>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 mt-auto mb-auto">
             <h1 className="text-4xl font-bold mb-6 text-green-700">Tentang BeeHealth</h1>
