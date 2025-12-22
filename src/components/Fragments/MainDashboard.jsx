@@ -53,12 +53,13 @@ const MainDashboard = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"></div>
-      </div>
-    );
-  }
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+                <span className="ml-3 text-green-700 font-semibold">Memuat Home BeeHealth...</span>
+            </div>
+        );
+    }
 
   return (
     // WRAPPER UTAMA: Menggunakan max-w-7xl agar lurus dengan Navbar & Footer

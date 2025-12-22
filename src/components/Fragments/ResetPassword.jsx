@@ -3,8 +3,8 @@ import Button from "../Elements/Button/Index.jsx";
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import api from "../../../api";
 
-const API_URL = import.meta.env.VITE_API_URL;
 const FormResetPassword = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
@@ -14,6 +14,7 @@ const FormResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
@@ -39,19 +40,14 @@ const FormResetPassword = () => {
       return;
     }
 
-    try {
-      const response = await fetch(`${API_URL}/auth/reset-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token,
-          password,
-        }),
-      });
+    setIsLoading(true);
 
-      const data = await response.json();
+    try {
+      const response = await api.post(`/auth/reset-password`, {
+        token: token,
+        newPassword: password
+      });
+      // const data = await response.json();
 
       if (response.ok) {
         alert("Password berhasil direset. Silakan login.");
@@ -62,6 +58,8 @@ const FormResetPassword = () => {
     } catch (error) {
       console.error(error);
       setMessage("Terjadi kesalahan pada server.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

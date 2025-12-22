@@ -2,21 +2,14 @@ import InputForm from "../Elements/Input/Index";
 import Button from "../Elements/Button/Index.jsx";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import axios from 'axios';
+import api from "../../../api";
 
-// const API_URL = import.meta.env.VITE_API_URL;
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    'ngrok-skip-browser-warning': 'true', // Penting untuk ngrok
-    'Content-Type': 'application/json'
-  }
-});
 
 const FormForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState("");
+
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
