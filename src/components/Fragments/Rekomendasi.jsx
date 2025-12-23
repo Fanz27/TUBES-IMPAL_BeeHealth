@@ -1,160 +1,157 @@
-import React, { useEffect, useState } from "react";
-import api  from "../../../api";
-import { Utensils, Dumbbell, Activity, AlertCircle, CheckCircle, Sparkles, Bot } from "lucide-react";
-// import ReactMarkdown from 'react-markdown'; // Opsional: Install 'npm install react-markdown' jika gemini kirim format list
+import React, { useState } from 'react';
+import { ChefHat, Flame, PlusCircle, Filter } from 'lucide-react';
 
-
-const Rekomendasi = () => {
-//   const [data, setData] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
+// --- DATA DATABASE MAKANAN (Mockup) ---
+// Nanti ini bisa diambil dari API Backend
+const foodDatabase = [
+  // SARAPAN
+  { id: 1, name: "Oatmeal Pisang & Madu", calories: 350, protein: 12, carbs: 60, fat: 6, category: "SARAPAN", goal: "CUTTING", image: "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?auto=format&fit=crop&w=500&q=60" },
+  { id: 2, name: "Roti Gandum Telur Orak-arik", calories: 420, protein: 20, carbs: 35, fat: 15, category: "SARAPAN", goal: "BULKING", image: "https://images.unsplash.com/photo-1525351484163-7529414395d8?auto=format&fit=crop&w=500&q=60" },
   
-//   useEffect(() => {
-//     // ... (fetchRekomendasi tetap sama) ...
-//     const fetchRekomendasi = async () => {
-//         try {
-//           setLoading(true);
-//           const res = await api.get("/rekomendasi/");
-//           setData(res.data);
-//         } catch (err) {
-//            setError("Gagal memuat data");
-//         } finally {
-//            setLoading(false);
-//         }
-//     };
-//     fetchRekomendasi();
-//   }, []);
+  // MAKAN SIANG
+  { id: 3, name: "Dada Ayam Bakar & Sayur", calories: 450, protein: 40, carbs: 10, fat: 12, category: "SIANG", goal: "CUTTING", image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=500&q=60" },
+  { id: 4, name: "Nasi Merah & Sapi Lada Hitam", calories: 600, protein: 35, carbs: 70, fat: 18, category: "SIANG", goal: "BULKING", image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=500&q=60" },
 
-//   const formatStatus = (status) => {
-//      // ... (tetap sama) ...
-//      if(status === 'NEEDS_FOOD') return 'Butuh Asupan';
-//      if(status === 'NEEDS_EXERCISE') return 'Perlu Olahraga';
-//      return 'Seimbang';
-//   };
+  // MAKAN MALAM
+  { id: 5, name: "Salad Tuna", calories: 300, protein: 25, carbs: 8, fat: 10, category: "MALAM", goal: "CUTTING", image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=500&q=60" },
+  { id: 6, name: "Pasta Aglio Olio Udang", calories: 550, protein: 30, carbs: 65, fat: 20, category: "MALAM", goal: "BULKING", image: "https://images.unsplash.com/photo-1626844131082-256783844137?auto=format&fit=crop&w=500&q=60" },
 
-//   if (loading) return <div className="text-center py-20">Loading...</div>;
-//   if (error) return <div className="text-center py-20 text-red-500">{error}</div>;
-//   if (!data?.summary?.target) return <div>Data kosong</div>;
+  // SNACK
+  { id: 7, name: "Greek Yogurt & Berries", calories: 150, protein: 15, carbs: 20, fat: 0, category: "SNACK", goal: "CUTTING", image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=500&q=60" },
+];
 
-//   const { summary, recommendations } = data;
+const Recommendations = () => {
+  const [activeTab, setActiveTab] = useState("SARAPAN");
+  const [userGoal, setUserGoal] = useState("ALL"); // Bisa "CUTTING", "BULKING", atau "ALL"
 
-//   return (
-//     <div className="max-w-4xl mx-auto mt-6 p-4 pt-24 font-sans">
-//       <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-//         <Activity className="text-green-600" /> Analisis & Rekomendasi
-//       </h1>
-//       <NutritionistCommentSection summary={data.summary} />
+  // Logic Filter Makanan
+  const filteredFood = foodDatabase.filter((food) => {
+    const matchCategory = food.category === activeTab;
+    const matchGoal = userGoal === "ALL" ? true : food.goal === userGoal;
+    return matchCategory && matchGoal;
+  });
 
-//       {/* Summary Card (Kode Lama Tetap Disini) */}
-//       <div className={`p-6 rounded-2xl border mb-8 shadow-sm ${summary.status === 'MAINTAINED' ? 'bg-green-50' : 'bg-gray-50'}`}>
-//          {/* ... Isi Summary Card kamu tetap sama ... */}
-//          <div className="flex justify-between items-center">
-//             <div>
-//                 <h2 className="font-bold text-lg">Status: {formatStatus(summary.status)}</h2>
-//                 <p className="text-gray-600">Netto: {summary.currentNet} / {summary.target} kkal</p>
-//             </div>
-//          </div>
-//       </div>
+  const handleAddFood = (foodName) => {
+    alert(`Berhasil menambahkan ${foodName} ke log harian!`);
+    // Disini nanti panggil API ke backend untuk save log
+  };
 
-//       {/* --- FITUR AI CHATBOT SECTION --- */}
-//       <div className="mb-10">
-//         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
-//           {/* Dekorasi Background */}
-//           <Sparkles className="absolute top-4 right-4 text-blue-300 opacity-50" size={48} />
+  return (
+    <div className="min-h-screen bg-white text-gray-900 p-6 font-sans">
+      <div className="max-w-5xl mx-auto">
+        
+        {/* --- HEADER --- */}
+        <div className="mb-8 text-center md:text-left">
+          <h1 className="text-3xl font-bold flex items-center justify-center md:justify-start gap-3 text-green-700">
+            <ChefHat size={32} /> Rekomendasi Makanan
+          </h1>
+          <p className="text-gray-500 mt-2">
+            Pilihan menu sehat yang disesuaikan untuk kebutuhan nutrisimu.
+          </p>
+        </div>
+
+        {/* --- FILTER & CONTROLS --- */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           
-//           <div className="relative z-10">
-//             <h3 className="text-xl font-bold flex items-center gap-2 mb-2">
-//               <Bot size={24} /> Tanya BeeCoach (AI)
-//             </h3>
-//             <p className="text-blue-100 mb-4 text-sm max-w-lg">
-//               Bingung mau makan apa atau olahraga apa? Minta saran personal dari AI berdasarkan data kalorimu hari ini.
-//             </p>
+          {/* Tab Kategori Makan */}
+          <div className="flex bg-gray-100 p-1 rounded-xl overflow-x-auto w-full md:w-auto">
+            {["SARAPAN", "SIANG", "MALAM", "SNACK"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+                  activeTab === tab
+                    ? "bg-white text-green-700 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
 
-//             {!aiAdvice && !loadingAi && (
-//               <button 
-//                 onClick={handleAskAI}
-//                 className="bg-white text-blue-600 px-5 py-2.5 rounded-full font-bold shadow-md hover:bg-blue-50 transition-transform hover:scale-105 flex items-center gap-2"
-//               >
-//                 <Sparkles size={18} /> Minta Saran Sekarang
-//               </button>
-//             )}
+          {/* Dropdown Goal (Opsional) */}
+          <div className="flex items-center gap-2">
+            <Filter size={18} className="text-gray-400" />
+            <select 
+              value={userGoal} 
+              onChange={(e) => setUserGoal(e.target.value)}
+              className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 outline-none"
+            >
+              <option value="ALL">Semua Tujuan</option>
+              <option value="CUTTING">Diet / Cutting</option>
+              <option value="BULKING">Otot / Bulking</option>
+            </select>
+          </div>
+        </div>
 
-//             {loadingAi && (
-//               <div className="flex items-center gap-3 bg-white/10 p-4 rounded-xl backdrop-blur-sm">
-//                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-//                 <span className="text-sm font-medium">Sedang menganalisis kebutuhan nutrisimu...</span>
-//               </div>
-//             )}
+        {/* --- GRID KARTU MAKANAN --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredFood.length > 0 ? (
+            filteredFood.map((food) => (
+              <div key={food.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden group">
+                
+                {/* Gambar Makanan */}
+                <div className="h-48 overflow-hidden relative">
+                  <img 
+                    src={food.image} 
+                    alt={food.name} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  {/* Badge Goal */}
+                  <div className={`absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full text-white ${
+                    food.goal === 'CUTTING' ? 'bg-orange-500' : 'bg-blue-600'
+                  }`}>
+                    {food.goal}
+                  </div>
+                </div>
 
-//             {aiAdvice && (
-//               <div className="mt-4 bg-white/95 text-gray-800 p-5 rounded-xl shadow-lg animate-in fade-in slide-in-from-bottom-4">
-//                 <div className="flex items-start gap-3">
-//                   <div className="bg-blue-100 p-2 rounded-full mt-1">
-//                     <Sparkles size={20} className="text-blue-600" />
-//                   </div>
-//                   <div className="prose prose-sm max-w-none">
-//                     {/* Jika pakai react-markdown */}
-//                     {/* <ReactMarkdown>{aiAdvice}</ReactMarkdown> */}
-                    
-//                     {/* Jika teks biasa */}
-//                     <p className="whitespace-pre-line leading-relaxed">{aiAdvice}</p>
-//                   </div>
-//                 </div>
-//                 <button 
-//                     onClick={handleAskAI} 
-//                     className="mt-4 text-xs text-blue-500 font-bold hover:underline"
-//                 >
-//                     Refresh Saran
-//                 </button>
-//               </div>
-//             )}
-//           </div>
-//         </div>
-//       </div>
-//       {/* -------------------------------- */}
+                {/* Info Makanan */}
+                <div className="p-5">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-bold text-gray-800 line-clamp-1">{food.name}</h3>
+                    <div className="flex items-center gap-1 text-orange-500 font-bold text-sm bg-orange-50 px-2 py-1 rounded-md">
+                      <Flame size={14} /> {food.calories}
+                    </div>
+                  </div>
 
-//       {/* Rekomendasi Makanan (Kode Lama) */}
-//       {summary.status === "NEEDS_FOOD" && recommendations.food?.length > 0 && (
-//          // ... kode map makanan kamu ...
-//          <div className="mb-8">
-//             <h3 className="font-bold mb-4">Rekomendasi Statis</h3>
-//             {/* Grid makanan */}
-//          </div>
-//       )}
+                  {/* Detail Nutrisi */}
+                  <div className="grid grid-cols-3 gap-2 mt-4 mb-6 text-center">
+                    <div className="bg-gray-50 p-2 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Protein</p>
+                      <p className="font-bold text-gray-800">{food.protein}g</p>
+                    </div>
+                    <div className="bg-gray-50 p-2 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Carbs</p>
+                      <p className="font-bold text-gray-800">{food.carbs}g</p>
+                    </div>
+                    <div className="bg-gray-50 p-2 rounded-lg">
+                      <p className="text-xs text-gray-500 mb-1">Fat</p>
+                      <p className="font-bold text-gray-800">{food.fat}g</p>
+                    </div>
+                  </div>
 
-//        {/* Rekomendasi Olahraga (Kode Lama) */}
-//        {summary.status === "NEEDS_EXERCISE" && (
-//          // ... kode map olahraga kamu ...
-//          <div>
-//             <h3 className="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2 border-b pb-2">
-//               <Dumbbell className="text-red-500" /> Saran Pembakaran Kalori
-//             </h3>
-//             <p className="text-sm text-gray-500 mb-4 bg-red-50 p-3 rounded-lg border border-red-100 inline-block">
-//               Pilih salah satu aktivitas di bawah ini dan lakukan selama <strong>30 menit</strong> untuk kembali ke target.
-//             </p>
-//             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-//               {recommendations.exercise.map((item, idx) => (
-//                 <div key={idx} className="bg-white border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition-all group">
-//                   <div className="flex justify-between items-start mb-2">
-//                     <h4 className="font-bold text-gray-800 group-hover:text-red-600 transition-colors">
-//                       {item.name}
-//                     </h4>
-//                     <span className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded-full">
-//                       -{Math.round(item.caloriesBurnPerMinute * 30)} kkal
-//                     </span>
-//                   </div>
-//                   <div className="flex items-center justify-between text-xs text-gray-500 mt-3">
-//                     <span>Intensitas: {item.caloriesBurnPerMinute} kal/menit</span>
-//                     <Dumbbell size={14} className="opacity-50" />
-//                   </div>
-//               </div>
-//             ))}
-//           </div>
-//          </div>
-//        )}
+                  {/* Tombol Add */}
+                  <button 
+                    onClick={() => handleAddFood(food.name)}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  >
+                    <PlusCircle size={18} />
+                    Catat Makanan Ini
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-20 text-gray-400">
+              <p>Tidak ada rekomendasi makanan untuk filter ini.</p>
+            </div>
+          )}
+        </div>
 
-//     </div>
-//   );
- };
+      </div>
+    </div>
+  );
+};
 
-export default Rekomendasi;
+export default Recommendations;

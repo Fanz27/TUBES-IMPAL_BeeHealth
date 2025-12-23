@@ -75,7 +75,7 @@ const Timeline = ({selectedDate, targetUserId}) => {
     // Di dalam Timeline.jsx
     const fetchUserStats = async () => {
         try {
-            let endpoint = '/user/stats';
+            let endpoint = `/user/stats`;
             if (targetUserId && targetUserId !== 'undefined' && targetUserId !== 'null') {
             endpoint = `/user/stats/${targetUserId}`; // Tambahkan '/' sebelum ID
             }
@@ -89,7 +89,7 @@ const Timeline = ({selectedDate, targetUserId}) => {
                     ...prev,
                     streakCount: res.data.streak || 0,
                     isStreakActive: res.data.isStreakActive, // Simpan status aktif/mati
-                    username: res.data.username || prev.username
+                    username: prev.username
                 }));
             }
         } catch (err) {
