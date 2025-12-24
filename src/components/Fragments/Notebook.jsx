@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api  from "../../../api";
+import api  from "../../../api"; // Sesuaikan path ini jika perlu
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -9,7 +9,8 @@ import {
   X,
   Calendar,
   BookOpen,
-  Loader2 // Icon loading tambahan
+  Loader2,
+  Trash2 // <--- IMPORT ICON SAMPAH (TRASH)
 } from 'lucide-react';
 
 const Notebook = () => {
@@ -82,6 +83,7 @@ const Notebook = () => {
     }
   };
 
+  // --- FUNGSI SEARCH & SELECT ---
   const handleFoodSearch = async (text) => {
     setFormData(prev => ({ ...prev, foodNama: text}));
 
@@ -137,11 +139,30 @@ const Notebook = () => {
     setShowSugesstion(false);
   };
 
-  // 2. POST DATA (Submit Form)
+  // --- FUNGSI DELETE (BARU) ---
+  const handleDeleteLog = async (id, type) => {
+    if (!confirm(`Yakin ingin menghapus catatan ${type === 'food' ? 'makanan' : 'olahraga'} ini?`)) return;
+
+    try {
+        const endpoint = type === 'food' ? `/log/food/${id}` : `/log/exercise/${id}`;
+        
+        await api.delete(endpoint);
+        
+        // Refresh data setelah berhasil dihapus
+        fetchDailyLogs(); 
+        // alert("Berhasil menghapus data."); // Opsional: Tampilkan alert
+
+    } catch (err) {
+        console.error("Gagal hapus:", err);
+        const msg = err.response?.data?.message || "Gagal menghapus data.";
+        alert(msg);
+    }
+  };
+
+  // --- SUBMIT FORM ---
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validasi sederhana sebelum kirim ke server
     if (logType === 'food' && !formData.foodNama) {
         alert("Mohon isi Nama Makanan!");
         return;
@@ -151,11 +172,10 @@ const Notebook = () => {
         return;
     }
 
-    setSubmitLoading(true); // Aktifkan loading di tombol
+    setSubmitLoading(true);
 
     try {
       if (logType === 'food') {
-        // Kirim data Makanan
         await api.post('/log/food', {
           foodNama: formData.foodNama,
           mealType: formData.mealType,
@@ -163,7 +183,6 @@ const Notebook = () => {
           tanggal: formatDateForAPI(selectedDate)
         });
       } else {
-        // Kirim data Olahraga
         await api.post('/log/exercise', {
           userId: localStorage.getItem("userId"),
           exerciseId: formData.exerciseId,
@@ -173,11 +192,9 @@ const Notebook = () => {
         });
       }
 
-      // Jika Berhasil:
       setIsModalOpen(false);
-      fetchDailyLogs(); // Refresh data halaman
+      fetchDailyLogs(); 
       
-      // Reset Form agar bersih kembali
       setFormData({
         foodNama: '', 
         mealType: 'MAKAN_SIANG',
@@ -191,13 +208,11 @@ const Notebook = () => {
 
     } catch (err) {
       console.error("DEBUG Submit Error:", err);
-      
-      // LOGIKA ERROR HANDLING YANG LEBIH BAIK
       const serverMsg = err.response?.data?.message || err.response?.data?.error;
       const status = err.response?.status;
 
       if (serverMsg) {
-        alert(`Gagal: ${serverMsg}`); // Pesan langsung dari backend (misal: "Food ID not found")
+        alert(`Gagal: ${serverMsg}`);
       } else if (status === 400) {
         alert("Gagal: Data tidak valid. Cek apakah Nama Makanan/Olahraga benar ada di database.");
       } else if (status === 500) {
@@ -206,11 +221,10 @@ const Notebook = () => {
         alert("Gagal menyimpan. Periksa koneksi internet atau server.");
       }
     } finally {
-      setSubmitLoading(false); // Matikan loading tombol
+      setSubmitLoading(false);
     }
   };
 
-  // --- HANDLERS ---
   const changeDate = (days) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(selectedDate.getDate() + days);
@@ -225,7 +239,6 @@ const Notebook = () => {
     }));
   };
 
-  // Effect: Load data saat tanggal berubah
   useEffect(() => {
     setLogs({
       foodLogs: [],
@@ -235,17 +248,13 @@ const Notebook = () => {
     fetchDailyLogs(selectedDate);
   }, [selectedDate]);
 
-  // --- HITUNG MANUAL (FRONTEND CALCULATION) ---
-  // Kita hitung sendiri karena summary dari backend nilainya 0
   const calculatedSummary = () => {
-    // Hitung Kalori Masuk
     const totalIn = logs.foodLogs.reduce((total, log) => {
       const kalori = log.food?.kalori || 0;
       const porsi = log.porsi || 0;
       return total + (kalori * porsi);
     }, 0);
 
-    // Hitung Kalori Terbakar
     const totalOut = logs.exerciseLogs.reduce((total, log) => {
       const kaloriPerMenit = log.exercise?.caloriesBurnPerMinute || 0;
       const durasi = log.durationInMinutes || 0;
@@ -257,7 +266,6 @@ const Notebook = () => {
 
   const { totalIn, totalOut } = calculatedSummary();
 
-  // --- RENDER ---
   return (
     <div className="min-h-screen bg-[#F3F4F6] p-4 md:p-8 pt-32 font-sans text-gray-800">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -291,7 +299,6 @@ const Notebook = () => {
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-wider text-gray-400 font-bold">Masuk</p>
             <p className="text-2xl font-bold text-green-600">
-              {/* {logs.summary?.totalCaloriesIn || 0} */}
               {totalIn}
             </p>
           </div>
@@ -299,7 +306,6 @@ const Notebook = () => {
           <div className="space-y-1 border-x border-gray-100">
             <p className="text-xs uppercase tracking-wider text-gray-400 font-bold">Netto</p>
             <p className="text-3xl font-extrabold text-gray-800">
-              {/* {(logs.summary?.totalCaloriesIn || 0) - (logs.summary?.totalCaloriesOut || 0)} */}
               {totalIn - totalOut}
             </p>
           </div>
@@ -307,7 +313,6 @@ const Notebook = () => {
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-wider text-gray-400 font-bold">Terbakar</p>
             <p className="text-2xl font-bold text-orange-500">
-              {/* {logs.summary?.totalCaloriesOut || 0} */}
               {totalOut}
             </p>
           </div>
@@ -332,6 +337,7 @@ const Notebook = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
+            
             {/* Kolom Makanan */}
             <div className="space-y-4">
               <h3 className="flex items-center gap-2 text-lg font-bold text-gray-700 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
@@ -348,7 +354,7 @@ const Notebook = () => {
               ) : (
                 <div className="space-y-3">
                   {logs.foodLogs.map((log) => (
-                    <div key={log.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex justify-between items-center">
+                    <div key={log.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex justify-between items-center group">
                       <div>
                         <p className="font-bold text-gray-800">{log.food?.nama || 'Unknown Food'}</p>
                         <div className="flex gap-2 mt-1">
@@ -358,8 +364,20 @@ const Notebook = () => {
                             <span className="text-xs text-gray-500">{log.porsi} porsi</span>
                         </div>
                       </div>
-                      <div className="text-green-600 font-bold bg-green-50 px-3 py-1 rounded-lg text-sm">
-                        +{log.food ? (log.food.kalori * log.porsi) : 0}
+
+                      <div className="flex items-center gap-3">
+                         <div className="text-green-600 font-bold bg-green-50 px-3 py-1 rounded-lg text-sm">
+                           +{log.food ? (log.food.kalori * log.porsi) : 0}
+                         </div>
+                         
+                         {/* TOMBOL DELETE MAKANAN */}
+                         <button 
+                            onClick={() => handleDeleteLog(log.id, 'food')}
+                            className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                            title="Hapus Makanan"
+                         >
+                            <Trash2 size={18} />
+                         </button>
                       </div>
                     </div>
                   ))}
@@ -383,9 +401,8 @@ const Notebook = () => {
               ) : (
                 <div className="space-y-3">
                   {logs.exerciseLogs.map((log) => (
-                    <div key={log.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex justify-between items-center">
+                    <div key={log.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex justify-between items-center group">
                       <div>
-                        {/* Cek nama dari berbagai kemungkinan properti */}
                         <p className="font-bold text-gray-800">
                           {log.exercise?.namaKegiatan ||  'Unknown Exercise'}
                         </p>
@@ -395,10 +412,21 @@ const Notebook = () => {
                         </p>
                       </div>
                       
-                      <div className="text-orange-500 font-bold bg-orange-50 px-3 py-1 rounded-lg text-sm">
-                        - {Math.round(
-                            (log.exercise?.kaloriTerbakarPerMenit || log.exercise?.caloriesBurnPerMinute || 0) * log.durationInMinutes
-                          )} kkal
+                      <div className="flex items-center gap-3">
+                         <div className="text-orange-500 font-bold bg-orange-50 px-3 py-1 rounded-lg text-sm">
+                           - {Math.round(
+                               (log.exercise?.kaloriTerbakarPerMenit || log.exercise?.caloriesBurnPerMinute || 0) * log.durationInMinutes
+                             )} kkal
+                         </div>
+
+                         {/* TOMBOL DELETE OLAHRAGA */}
+                         <button 
+                            onClick={() => handleDeleteLog(log.id, 'exercise')}
+                            className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                            title="Hapus Olahraga"
+                         >
+                            <Trash2 size={18} />
+                         </button>
                       </div>
                     </div>
                   ))}
@@ -524,7 +552,6 @@ const Notebook = () => {
                         required
                         autoComplete='off'
                       />
-                      {/* Di dalam input exerciseNama, bagian showSuggestion */}
                       {showSuggestion && exerciseSugesstion.length > 0 && (
                         <div className="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
                             {exerciseSugesstion.map((exercise) => ( 
