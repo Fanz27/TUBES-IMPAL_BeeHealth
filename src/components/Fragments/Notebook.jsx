@@ -504,7 +504,7 @@ const Notebook = () => {
                             className="p-3 hover:bg-green-500 cursor-pointer border-b border-gray-50 last:border-0"
                           >
                             <p className="font-bold text-sm text-gray-500">{food.nama}</p>
-                            <p className="text-xs text-gray-400">{food.kalori} kkal / 100gram</p>
+                            <p className="text-xs text-gray-400">{food.kalori} kkal / 100</p>
                           </div>
                         ))}
                       </div>
