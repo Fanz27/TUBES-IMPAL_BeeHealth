@@ -46,7 +46,12 @@ const Notebook = () => {
     durationInMinute: 0
   });
 
-  const formatDateForAPI = (date) => date.toISOString().split('T')[0];
+  const formatDateForAPI = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
   
   const formatDateDisplay = (date) => new Intl.DateTimeFormat('id-ID', {
     weekday: 'long',
@@ -499,7 +504,7 @@ const Notebook = () => {
                             className="p-3 hover:bg-green-500 cursor-pointer border-b border-gray-50 last:border-0"
                           >
                             <p className="font-bold text-sm text-gray-500">{food.nama}</p>
-                            <p className="text-xs text-gray-400">{food.kalori} kkal / porsi</p>
+                            <p className="text-xs text-gray-400">{food.kalori} kkal / 100gram</p>
                           </div>
                         ))}
                       </div>
@@ -574,7 +579,7 @@ const Notebook = () => {
                       <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Durasi (Menit)</label>
                       <input 
                         type="number" 
-                        name="durationInMinute"
+                        name="durationInMinute" 
                         min="1"
                         value={formData.durationInMinute || ""}
                         onChange={handleInputChange}
