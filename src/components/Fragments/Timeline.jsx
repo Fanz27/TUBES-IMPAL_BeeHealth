@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Flame, Heart, MessageCircle, ChevronDown, Plus, Utensils, Flag, X, Image as ImageIcon, Trash2 } from 'lucide-react';
-import axios from 'axios';
 import api  from "../../../api";    
 
 
@@ -43,8 +42,8 @@ const Timeline = ({selectedDate, targetUserId}) => {
         MAKAN_PAGI: [], MAKAN_SIANG: [], MAKAN_MALAM: [], KUDAPAN: []
     });
 
-    const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    const streakData = [true, true, true, true, true, false, false];
+    // const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    // const streakData = [true, true, true, true, true, false, false];
     const [expandMeals, setExpandMeals] = useState({0: true});
 
     const formatDate = (date) => {
@@ -72,23 +71,21 @@ const Timeline = ({selectedDate, targetUserId}) => {
         if (role) setRoleId(role);
     }, [targetUserId]);
 
-    // Di dalam Timeline.jsx
     const fetchUserStats = async () => {
         try {
             let endpoint = `/user/stats`;
             if (targetUserId && targetUserId !== 'undefined' && targetUserId !== 'null') {
-            endpoint = `/user/stats/${targetUserId}`; // Tambahkan '/' sebelum ID
+            endpoint = `/user/stats/${targetUserId}`; 
             }
 
-            console.log("Fetching URL:", endpoint); // Cek di console browser
-
+            console.log("Fetching URL:", endpoint); 
             const res = await api.get(endpoint);
             console.log("DATA DARI BACKEND:", res.data);
             if (res.data) {
                 setUserData(prev => ({
                     ...prev,
                     streakCount: res.data.streak || 0,
-                    isStreakActive: res.data.isStreakActive, // Simpan status aktif/mati
+                    isStreakActive: res.data.isStreakActive, 
                     username: prev.username
                 }));
             }
@@ -113,7 +110,6 @@ const Timeline = ({selectedDate, targetUserId}) => {
 
             if (logData.length > 0) {
                 logData.forEach(item => {
-                    // Hitung kalori (Handle jika food null)
                     const calorie = item.food ? (item.food.kalori * item.porsi) : 0;
                     const foodNama = item.food ? item.food.nama : "Unknown";
 
@@ -123,11 +119,9 @@ const Timeline = ({selectedDate, targetUserId}) => {
                         calories: calorie
                     };
 
-                    // Masukkan ke kategori yang sesuai
                     if (grouped[item.mealType]) {
                         grouped[item.mealType].push(cleanItem);
                     } else {
-                        // Jaga-jaga kalau backend kirim "SARAPAN" tapi state kita "MAKAN_PAGI"
                         if(item.mealType === 'SARAPAN') {
                              grouped['MAKAN_PAGI'].push(cleanItem);
                         }
@@ -162,7 +156,6 @@ const Timeline = ({selectedDate, targetUserId}) => {
             const response = await api.get('/post/'); 
             const baseURL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/api\/?$/, '');
 
-            // 2. Cek Validitas Data
             const rawData = response.data.data || response.data;
             if (!Array.isArray(rawData)) {
                 console.warn("Format data post bukan array");
@@ -170,21 +163,17 @@ const Timeline = ({selectedDate, targetUserId}) => {
                 return;
             }
 
-            // 3. Transform Data
             const transformedPosts = rawData.map(post => {
                 let finalImageUrl = null;
                 
                 if (post.imageUrl) {
-                    // Bersihkan path gambar
                     let cleanPath = post.imageUrl.replace(/\\/g, "/"); 
                     if (cleanPath.startsWith('/')) cleanPath = cleanPath.substring(1);
                     
-                    // Tambah 'uploads/' jika belum ada
                     if (!cleanPath.startsWith('uploads') && !cleanPath.startsWith('http')) {
                          cleanPath = `uploads/${cleanPath}`;
                     }
 
-                    // Gabung URL
                     finalImageUrl = cleanPath.startsWith('http') ? cleanPath : `${baseURL}/${cleanPath}`;
                 }
 
@@ -194,7 +183,7 @@ const Timeline = ({selectedDate, targetUserId}) => {
                     userImage: "https://i.pravatar.cc/150?img=12",
                     content: post.deskripsi,
                     image: finalImageUrl,
-                    likes: post.likesCount || 0, // Pakai 0 jika undefined
+                    likes: post.likesCount || 0, 
                     liked: post.liked || false,
                     comments: post.comments || [],
                     user: post.user
@@ -205,7 +194,7 @@ const Timeline = ({selectedDate, targetUserId}) => {
 
         } catch (err) {
             console.error("Error fetching posts:", err);
-            setPosts([]); // Fallback array kosong agar tidak crash
+            setPosts([]); 
         } finally {
             setLoading(false);
         }
@@ -253,7 +242,7 @@ const Timeline = ({selectedDate, targetUserId}) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             
-            await fetchPosts(); // Refresh data
+            await fetchPosts(); 
             
             setNewPostContent("");
             removeImage();
@@ -314,16 +303,12 @@ const Timeline = ({selectedDate, targetUserId}) => {
 
     const toggleMeal = (type) => setExpandMeals(prev => ({...prev, [type]: !prev[type]}));
 
-    // Masukkan ini sebelum return (...)
-
-// Tentukan Warna Api
 const getStreakColor = () => {
     if (userData.isStreakActive) return "text-orange-500 fill-orange-500 drop-shadow-md"; 
     if (userData.streakCount > 0) return "text-gray-400 fill-gray-400"; 
     return "text-gray-200"; 
 };
 
-// Tentukan Pesan Motivasi
 const getStreakMessage = () => {
     if (userData.isStreakActive) {
         return "Kamu on fire! Pertahankan! 🔥";
