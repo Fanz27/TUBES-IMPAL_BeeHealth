@@ -6,7 +6,7 @@ import { ChefHat, Flame, PlusCircle, Filter } from 'lucide-react';
 const foodDatabase = [
   // SARAPAN
   { id: 1, name: "Oatmeal Pisang & Madu", calories: 350, protein: 12, carbs: 60, fat: 6, category: "SARAPAN", goal: "CUTTING", image: "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?auto=format&fit=crop&w=500&q=60" },
-  { id: 2, name: "Roti Gandum Telur Orak-arik", calories: 420, protein: 20, carbs: 35, fat: 15, category: "SARAPAN", goal: "BULKING", image: "https://images.unsplash.com/photo-1525351484163-7529414395d8?auto=format&fit=crop&w=500&q=60" },
+  { id: 2, name: "Roti Gandum Telur Orak-arik", calories: 420, protein: 20, carbs: 35, fat: 15, category: "SARAPAN", goal: "BULKING", image: "https://www.istockphoto.com/id/foto/telur-orak-arik-pada-roti-gandum-utuh-dengan-alpukat-gm978088934-265883413" },
   
   // MAKAN SIANG
   { id: 3, name: "Dada Ayam Bakar & Sayur", calories: 450, protein: 40, carbs: 10, fat: 12, category: "SIANG", goal: "CUTTING", image: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=500&q=60" },
