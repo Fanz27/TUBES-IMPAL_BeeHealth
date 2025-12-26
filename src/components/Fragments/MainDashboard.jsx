@@ -112,10 +112,11 @@ const MainDashboard = () => {
       <section className="bg-white rounded-3xl p-10">
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Bagikan Keberhasilanmu
+            Bagikan Keberhasilanmu dengan orang lain
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            Dapatkan motivasi bersama timeline BeeHealth dan raih tujuanmu.
+            Setiap hari, pengguna BeeHealth membagikan Keberhasilan mereka dalam menciptakan pola makan yang baik.
+            Dapatkan motivasi mu bersama timeline BeeHealth dan raih tujuanmu.
           </p>
         </div>
 

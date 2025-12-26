@@ -1,13 +1,13 @@
 import InputForm from "../Elements/Input/Index";
 import Button from "../Elements/Button/Index.jsx";
 import { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useParams } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import api from "../../../api";
 
 const FormResetPassword = () => {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
+  const { token } = useParams();
   const navigate = useNavigate();
 
   const [password, setPassword] = useState("");
@@ -43,21 +43,19 @@ const FormResetPassword = () => {
     setIsLoading(true);
 
     try {
-      const response = await api.post(`/auth/reset-password`, {
-        token: token,
+      const response = await api.post(`/auth/reset-password/${token}`, {
         newPassword: password
       });
       // const data = await response.json();
-
-      if (response.ok) {
-        alert("Password berhasil direset. Silakan login.");
-        navigate("/login");
-      } else {
-        setMessage(data.message || "Reset password gagal.");
-      }
+      alert("Password berhasil direset. Silakan login.");
+      navigate("/login");
     } catch (error) {
       console.error(error);
-      setMessage("Terjadi kesalahan pada server.");
+      if (error.response && error.response.data) {
+        setMessage(error.response.data.message || "Reset password gagal.");
+      } else {
+        setMessage("Terjadi kesalahan pada server atau koneksi.");
+      }
     } finally {
       setIsLoading(false);
     }

@@ -33,7 +33,7 @@ const router = createBrowserRouter([
   { path: "/login", element: <LoginPage/> },
   { path: "/register", element: <RegisterPage/> },
   {path: "/forgot-password", element: <FormForgotPassword/>},
-  {path: "/reset-password", element: <FormResetPassword/>},
+  {path: "/reset-password/:token", element: <FormResetPassword/>},
 
   // --- APP ROUTES (Pakai MainLayout: Ada Navbar, Footer & Padding Otomatis) ---
   {
