@@ -23,7 +23,8 @@ const FormForgotPassword = () => {
 
     try {
       const response = await api.post(`/auth/forgot-password`, {
-        email: email.trim()
+        email: email.trim(),
+        user: ''
       });
       
       setSuccess("Link reset password telah dikirim ke email Anda.");
