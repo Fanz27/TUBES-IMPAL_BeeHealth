@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChefHat, Flame, PlusCircle, Loader2, AlertCircle, Dumbbell, Activity, Target } from 'lucide-react'; 
-import api from '../../../api'; 
+import api from '../../../api'; // Pastikan path import api.js sudah benar
 
 const Recommendations = () => {
   // --- STATE ---
@@ -17,7 +17,7 @@ const Recommendations = () => {
   const [error, setError] = useState(null);
   const [addingId, setAddingId] = useState(null); 
 
-  // --- FETCH DATA SAAT COMPONENT MOUNT ---
+  // --- FETCH DATA ---
   useEffect(() => {
     fetchRecommendations();
   }, []);
@@ -47,37 +47,33 @@ const Recommendations = () => {
     setAddingId(item.id || item.nama || item.namaKegiatan); 
 
     try {
-        // 1. Tentukan Tanggal Hari Ini (Format YYYY-MM-DD)
         const today = new Date().toISOString().split('T')[0];
 
         if (type === 'food') {
-            // 2. Mapping Tab Frontend -> Enum Backend
-            // Tab "SIANG" di UI -> "MAKAN_SIANG" di Database
+            // Mapping Tab Frontend -> Enum Backend
             let mealTypeEnum = 'KUDAPAN';
             if (activeTab === 'SARAPAN') mealTypeEnum = 'SARAPAN';
             if (activeTab === 'SIANG') mealTypeEnum = 'MAKAN_SIANG';
             if (activeTab === 'MALAM') mealTypeEnum = 'MAKAN_MALAM';
             if (activeTab === 'SNACK') mealTypeEnum = 'KUDAPAN';
 
-            // 3. Kirim ke API yang sudah ada
             await api.post('/log/food', {
-                foodNama: item.nama,
+                foodNama: item.nama, 
                 mealType: mealTypeEnum, 
                 porsi: 1, 
                 tanggal: today
             });
             alert(`Berhasil menambahkan ${item.nama} ke ${activeTab}`);
         } else {
-            // Logic Olahraga
             await api.post('/log/exercise', {
-                namaKegiatan: item.namaKegiatan, 
-                durationInMinute: 30,
+                namaKegiatan: item.namaKegiatan,
+                durationInMinute: 30, 
                 tanggal: today
             });
             alert(`Berhasil menambahkan olahraga: ${item.namaKegiatan}`);
         }
 
-        fetchRecommendations();
+        fetchRecommendations(); // Refresh progress bar
 
     } catch (error) {
         console.error("Gagal mencatat:", error);
@@ -88,9 +84,8 @@ const Recommendations = () => {
     }
   };
 
-  // --- SUB-COMPONENT: MACRO CARD (PROGRESS BAR) ---
+  // --- SUB-COMPONENT: MACRO CARD ---
   const MacroCard = ({ label, current, target, colorClass, unit = 'g' }) => {
-     // Hitung persentase bar (max 100%)
      const percentage = Math.min(100, Math.max(0, (current / target) * 100)) || 0;
      
      return (
@@ -116,7 +111,6 @@ const Recommendations = () => {
     <div className="min-h-screen text-gray-900 p-4 md:p-8 pt-24 font-sans">
       <div className="max-w-5xl mx-auto">
         
-        {/* HEADER */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
             <Activity className="text-green-600" /> Pusat Rekomendasi
@@ -124,7 +118,6 @@ const Recommendations = () => {
           <p className="text-gray-500 mt-1">Analisis cerdas dan rekomendasi menu harianmu.</p>
         </div>
 
-        {/* LOADING & ERROR STATES */}
         {loading && (
             <div className="flex justify-center py-20"><Loader2 className="animate-spin text-green-600" size={40} /></div>
         )}
@@ -135,10 +128,8 @@ const Recommendations = () => {
             </div>
         )}
 
-        {/* KONTEN UTAMA (Hanya tampil jika loading selesai & sukses) */}
         {!loading && !error && summary && (
           <>
-            {/* JIKA USER BELUM CALCULATE */}
             {summary.status === 'CALCULATE_REQUIRED' ? (
                 <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-gray-300 shadow-sm">
                     <h2 className="text-xl font-bold text-gray-700 mb-2">Target Kalori Belum Ditetapkan</h2>
@@ -150,7 +141,7 @@ const Recommendations = () => {
             ) : (
                 <div className="space-y-8">
                     
-                    {/* 1. DASHBOARD RINGKASAN KALORI */}
+                    {/* DASHBOARD RINGKASAN */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
                          <div className="flex items-center gap-4 w-full md:w-auto">
                             <div className={`p-4 rounded-full flex-shrink-0 ${summary.remaining >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
@@ -169,7 +160,6 @@ const Recommendations = () => {
                             </div>
                          </div>
 
-                         {/* Status Badge */}
                          <div className={`px-4 py-2 rounded-lg font-bold text-sm text-center w-full md:w-auto ${
                              summary.status === 'NEEDS_EXERCISE' ? 'bg-blue-100 text-blue-700' : 
                              summary.status === 'NEEDS_FOOD' ? 'bg-orange-100 text-orange-700' : 
@@ -179,7 +169,7 @@ const Recommendations = () => {
                          </div>
                     </div>
 
-                    {/* 2. PROGRESS BAR MACRO */}
+                    {/* PROGRESS BAR MACRO */}
                     {macros && (
                         <div className="flex flex-col md:flex-row gap-4">
                             <MacroCard label="Protein" current={macros.protein.consumed} target={macros.protein.target} colorClass="bg-blue-500" />
@@ -188,7 +178,7 @@ const Recommendations = () => {
                         </div>
                     )}
 
-                    {/* 3. REKOMENDASI OLAHRAGA (Hanya jika status NEEDS_EXERCISE) */}
+                    {/* REKOMENDASI OLAHRAGA */}
                     {summary.status === 'NEEDS_EXERCISE' && (
                         <div>
                              <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-blue-700">
@@ -218,7 +208,7 @@ const Recommendations = () => {
                         </div>
                     )}
 
-                    {/* 4. REKOMENDASI MAKANAN (Jika NEEDS_FOOD atau MAINTAINED) */}
+                    {/* REKOMENDASI MAKANAN */}
                     {(summary.status === 'NEEDS_FOOD' || summary.status === 'MAINTAINED') && (
                         <div className="mt-8">
                             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -248,13 +238,16 @@ const Recommendations = () => {
                                 foods.map((food, idx) => (
                                 <div key={food.id || idx} className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all overflow-hidden group">
                                     
-                                    {/* Gambar Placeholder */}
+                                    {/* --- GAMBAR DARI DATABASE --- */}
                                     <div className="h-40 bg-gray-100 relative overflow-hidden">
                                     <img 
-                                        src={`https://source.unsplash.com/400x300/?food,${food.nama}`} 
+                                        src={food.image || "https://via.placeholder.com/400x300?text=No+Image"} 
                                         alt={food.nama}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                        onError={(e) => e.target.src = 'https://via.placeholder.com/400x300?text=Makanan+Sehat'}
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = 'https://via.placeholder.com/400x300?text=Makanan+Sehat';
+                                        }}
                                     />
                                     <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-orange-500 flex items-center gap-1 shadow-sm">
                                         <Flame size={12} fill="currentColor" /> {food.kalori} kkal
@@ -263,9 +256,8 @@ const Recommendations = () => {
 
                                     <div className="p-4">
                                     <h3 className="font-bold text-gray-800 text-lg mb-1 capitalize line-clamp-1">{food.nama}</h3>
-                                    <p className="text-xs text-gray-400 mb-4">Per 1 Porsi Standar</p>
+                                    <p className="text-xs text-gray-400 mb-4">Per 100 gram</p>
                                     
-                                    {/* Info Nutrisi */}
                                     <div className="grid grid-cols-3 gap-2 text-center mb-4">
                                         <div className="bg-blue-50 p-2 rounded-lg">
                                             <p className="text-[10px] text-gray-500 uppercase font-bold">Protein</p>
@@ -281,7 +273,6 @@ const Recommendations = () => {
                                         </div>
                                     </div>
 
-                                    {/* TOMBOL CATAT */}
                                     <button 
                                         onClick={() => handleAddLog(food, 'food')}
                                         disabled={addingId === (food.id || food.nama)}
