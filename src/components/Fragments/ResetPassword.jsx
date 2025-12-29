@@ -62,41 +62,54 @@ const FormResetPassword = () => {
   };
 
   return (
-    <form onSubmit={handleResetPassword}>
-      <div className="relative">
-        <InputForm
-          label="Password Baru"
-          type={showPassword ? "text" : "password"}
-          placeholder="Minimal 8 karakter"
-          nama="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+    <form onSubmit={handleResetPassword} className="space-y-5 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="space-y-4">
+        <div className="relative group">
+          <InputForm
+            label="Password Baru"
+            type={showPassword ? "text" : "password"}
+            placeholder="Minimal 8 karakter"
+            nama="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="pr-12 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="relative group">
+          <InputForm
+            label="Konfirmasi Password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Ulangi password"
+            nama="confirmPassword"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="pr-12 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+          />
+          
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-[38px] p-1 text-gray-400 hover:text-blue-600 transition-colors"
+            tabIndex="-1"
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
       </div>
 
-      <div className="relative">
-        <InputForm
-          label="Konfirmasi Password"
-          type={showPassword ? "text" : "password"}
-          placeholder="Ulangi password"
-          nama="confirmPassword"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-        <button
-          type="button"
-          onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-4 top-9.5"
-        >
-          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-        </button>
-      </div>
+      {message && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-3 mt-2">
+          <p className="text-red-600 text-sm font-medium">{message}</p>
+        </div>
+      )}
 
-      <Button className="w-full mt-3" type="submit">
-        Reset Password
+      <Button 
+        className="w-full mt-4 py-3 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform transition-all active:scale-[0.98]" 
+        type="submit"
+      >
+        Simpan Password Baru
       </Button>
-
-      {message && <p className="text-red-500 mt-2">{message}</p>}
     </form>
   );
 };
