@@ -115,7 +115,7 @@ const FormLogin = () => {
       <InputForm
         label="Email"
         type="email"
-        placeholder="example@gmail.com"
+        placeholder="beehealth@gmail.com"
         nama="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -137,10 +137,10 @@ const FormLogin = () => {
         {showPassword ? <EyeOff size={18}/> : <Eye size={18}/> }
       </button>
     </div>
-    <div className="text-right mt-2">
+    <div className="text-right mt-5 mb-2">
       <Link
         to="/forgot-password"
-        className="text-sm text-blue-600 hover:underline"
+        className="text-sm text-black-600 hover:underline"
       >
         Lupa password?
       </Link>
