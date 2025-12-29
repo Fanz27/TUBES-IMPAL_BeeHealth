@@ -1,5 +1,5 @@
 import Label from "./Labels.jsx";
-import Input from "./input.jsx";
+import Input from "./Input.jsx";
 
 const InputForm = (props) => {
     const { label, nama, type, placeholder, value, onChange } = props;
